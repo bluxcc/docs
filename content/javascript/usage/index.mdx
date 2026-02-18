@@ -1,0 +1,21 @@
+---
+title: Usage
+description: Everything you can do with the Blux core SDK once a user is connected.
+---
+
+import { Card, Cards } from 'fumadocs-ui/components/card';
+import { getPageTreePeers } from 'fumadocs-core/page-tree';
+import { source } from '@/lib/source';
+
+The `blux` object is your main interface for interacting with connected users. Once a user is authenticated, you can open the profile modal, submit transactions, sign messages, and more — all with built-in UI handled for you.
+```ts
+import { blux } from "@bluxcc/core";
+```
+
+<Cards>
+  {getPageTreePeers(source.getPageTree(), '/javascript/usage').map((peer) => (
+    <Card key={peer.url} title={peer.name} href={peer.url}>
+      {peer.description}
+    </Card>
+  ))}
+</Cards>

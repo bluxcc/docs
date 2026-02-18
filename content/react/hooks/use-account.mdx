@@ -1,0 +1,189 @@
+---
+title: useAccount
+description: Fetch details of a Stellar account in your React app using the Blux SDK.
+---
+
+import { Tab, Tabs } from 'fumadocs-ui/components/tabs';
+import { Callout } from 'fumadocs-ui/components/callout';
+
+The `useAccount` hook returns details for a Stellar account. By default it fetches the connected account on the active network, but you can pass an explicit address and network to fetch any account.
+
+## Import
+```tsx
+import { useAccount } from "@bluxcc/react";
+```
+
+## Usage
+
+Called with no arguments, it returns the connected account on the current network:
+
+<Tabs items={['index.tsx', 'config.ts']}>
+<Tab value="index.tsx">
+```tsx
+import { useAccount } from "@bluxcc/react";
+
+function App() {
+  const { data } = useAccount();
+}
+```
+</Tab>
+<Tab value="config.ts">
+```tsx
+root.render(
+  <BluxProvider
+    config={{
+      appName: "MyApp",
+      networks: [networks.testnet, networks.mainnet],
+    }}
+  >
+    <App />
+  </BluxProvider>
+);
+```
+</Tab>
+</Tabs>
+
+You can combine it with `useBlux` to fetch account details only when the user is authenticated:
+
+<Tabs items={['index.tsx', 'config.ts']}>
+<Tab value="index.tsx">
+```tsx
+import { useAccount, useBlux } from "@bluxcc/react";
+
+function App() {
+  const { user, isAuthenticated } = useBlux();
+  const { data } = useAccount(
+    { address: user?.address },
+    { enabled: isAuthenticated }
+  );
+}
+```
+</Tab>
+<Tab value="config.ts">
+```tsx
+root.render(
+  <BluxProvider
+    config={{
+      appName: "MyApp",
+      networks: [networks.testnet, networks.mainnet],
+    }}
+  >
+    <App />
+  </BluxProvider>
+);
+```
+</Tab>
+</Tabs>
+
+You can also pass TanStack Query options as a second argument to customize caching and refetch behavior:
+
+<Tabs items={['index.tsx', 'config.ts']}>
+<Tab value="index.tsx">
+```tsx
+import { useAccount, networks } from "@bluxcc/react";
+
+function App() {
+  const { data } = useAccount(
+    { address: "GABK...2N7M", network: networks.mainnet },
+    { retry: 3, staleTime: 60000 }
+  );
+}
+```
+</Tab>
+<Tab value="config.ts">
+```tsx
+root.render(
+  <BluxProvider
+    config={{
+      appName: "MyApp",
+      networks: [networks.testnet, networks.mainnet],
+    }}
+  >
+    <App />
+  </BluxProvider>
+);
+```
+</Tab>
+</Tabs>
+
+<Callout type="info">
+  Always pass core parameters first, then TanStack Query options. The hook relies on this order to work correctly.
+</Callout>
+
+## Parameters
+
+### `address`
+`string | undefined`
+
+The Stellar account ID to fetch. Omit to use the currently connected account.
+
+### `network`
+`string | undefined`
+
+The network to query. Import `networks` from `@bluxcc/react` to select one.
+
+## Query Options
+
+These are passed as the second argument and map directly to TanStack Query options.
+
+| Option | Type | Default | Description |
+|---|---|---|---|
+| `enabled` | `boolean` | `true` | Set to `false` to disable automatic fetching |
+| `staleTime` | `number \| Infinity` | `0` | Time in ms before data is considered stale |
+| `gcTime` | `number \| Infinity` | `300000` | Time in ms before inactive cache data is garbage collected |
+| `retry` | `boolean \| number` | `3` | How many times to retry on failure |
+| `retryDelay` | `number \| function` | — | Delay in ms between retry attempts |
+| `refetchInterval` | `number \| false \| function` | — | Continuously refetch at this interval in ms |
+| `refetchOnMount` | `boolean \| 'always'` | `true` | Refetch on component mount if data is stale |
+| `refetchOnWindowFocus` | `boolean \| 'always'` | `true` | Refetch when the window regains focus |
+| `refetchOnReconnect` | `boolean \| 'always'` | `true` | Refetch when network reconnects |
+| `refetchIntervalInBackground` | `boolean` | — | Keep refetching even when tab is in background |
+| `placeholderData` | `GetAccountResult \| function` | — | Placeholder data shown while query is pending (not persisted to cache) |
+| `initialData` | `GetAccountResult \| function` | — | Initial data for the cache (persisted) |
+| `initialDataUpdatedAt` | `number \| function` | — | Timestamp of when `initialData` was last updated |
+| `select` | `function` | — | Transform or select a subset of the returned data |
+| `notifyOnChangeProps` | `string[] \| 'all'` | — | Limit re-renders to specific property changes |
+| `structuralSharing` | `boolean \| function` | `true` | Retain references from old data for performance |
+| `networkMode` | `'online' \| 'always' \| 'offlineFirst'` | `'online'` | Controls when queries can run relative to network status |
+| `meta` | `Record<string, unknown>` | — | Attach arbitrary metadata to the query cache entry |
+| `queryClient` | `QueryClient` | — | Use a custom QueryClient instead of the nearest context one |
+
+## Return Type
+
+### `data`
+`GetAccountResult | undefined`
+```tsx
+type GetAccountResult = Horizon.AccountResponse | null;
+```
+
+### Status Booleans
+
+| Property | Type | Description |
+|---|---|---|
+| `isPending` | `boolean` | No cached data and no completed fetch yet |
+| `isSuccess` | `boolean` | Query resolved successfully |
+| `isError` | `boolean` | Query failed |
+| `isLoading` | `boolean` | First fetch in-flight (`isFetching && isPending`) |
+| `isFetching` | `boolean` | Query function is currently executing |
+| `isRefetching` | `boolean` | Background refetch in progress |
+| `isFetched` | `boolean` | Query has been fetched at least once |
+| `isFetchedAfterMount` | `boolean` | Query fetched after component mounted |
+| `isStale` | `boolean` | Cached data is stale or older than `staleTime` |
+| `isPlaceholderData` | `boolean` | Currently showing placeholder data |
+| `isLoadingError` | `boolean` | Failed on the first fetch |
+| `isRefetchError` | `boolean` | Failed during a background refetch |
+| `isPaused` | `boolean` | Query wanted to fetch but was paused |
+
+### Other Returns
+
+| Property | Type | Description |
+|---|---|---|
+| `status` | `'pending' \| 'success' \| 'error'` | Current query status |
+| `fetchStatus` | `'fetching' \| 'idle' \| 'paused'` | Current fetch status |
+| `error` | `null \| Error` | Error object if the query failed |
+| `dataUpdatedAt` | `number` | Timestamp of last successful fetch |
+| `errorUpdatedAt` | `number` | Timestamp of last error |
+| `errorUpdateCount` | `number` | Total number of errors |
+| `failureCount` | `number` | Failures since last success |
+| `failureReason` | `null \| Error` | Reason for last retry failure |
+| `refetch` | `function` | Manually trigger a refetch |

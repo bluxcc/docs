@@ -1,0 +1,37 @@
+---
+title: Get Strict Receive Paths
+description: Fetch strict receive payment paths using the Blux core SDK.
+---
+
+The `getStrictReceivePaths` function returns available payment paths for a strict receive operation.
+
+The return value contains two properties:
+- `response` — the records you can use directly
+- `builder` — exposes `next()` and `prev()` to paginate through results
+
+## Type
+```tsx
+export type CallBuilderOptions = {
+  cursor?: string;
+  limit?: number;
+  network?: string;
+  order?: "asc" | "desc";
+};
+
+type GetPaymentPathResult = {
+  builder: PathCallBuilder;
+  response: Horizon.ServerApi.CollectionPage<Horizon.ServerApi.PaymentPathRecord>;
+};
+```
+
+## Usage
+```typescript
+import { core } from "@bluxcc/core";
+
+const result = await core.getStrictReceivePaths(
+  [
+    source: string | Asset[],
+    destinationAsset: Asset,
+    destinationAmount: string,
+  ], options);
+```

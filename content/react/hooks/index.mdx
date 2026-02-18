@@ -1,0 +1,16 @@
+---
+title: Hooks
+---
+
+import { Card, Cards } from 'fumadocs-ui/components/card';
+import { getPageTreePeers } from 'fumadocs-core/page-tree';
+import { source } from '@/lib/source';
+
+
+<Cards>
+  {getPageTreePeers(source.getPageTree(), '/react/hooks').map((peer) => (
+    <Card key={peer.url} title={peer.name} href={peer.url}>
+      {peer.description}
+    </Card>
+  ))}
+</Cards>

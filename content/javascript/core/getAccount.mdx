@@ -1,0 +1,23 @@
+---
+title: Get Account
+description: Fetch details of a Stellar account using the Blux core SDK.
+---
+
+The `getAccount` function returns the details of a single Stellar account. Omit `address` to use the connected account, and omit `network` to use the currently active network.
+
+## Type
+```tsx
+type GetAccountOptions = {
+  address?: string; // Ignore to get the details of the connected account.
+  network?: string; // Ignore to use the current active network
+};
+
+type GetAccountResult = Horizon.AccountResponse | null;
+```
+
+## Usage
+```typescript
+import { core } from "@bluxcc/core";
+
+const result = await core.getAccount({});
+```

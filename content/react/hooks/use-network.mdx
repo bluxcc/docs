@@ -1,0 +1,26 @@
+---
+title: useNetwork
+description: Retrieve the currently active network in your React app using the Blux SDK.
+---
+
+The `useNetwork` hook returns the currently active network of the app.
+
+## Import
+```tsx
+import { useNetwork } from "@bluxcc/react";
+```
+
+## Usage
+```tsx
+import { useNetwork } from "@bluxcc/react";
+
+const Comp = () => {
+  const network = useNetwork();
+
+  return <div>{network}</div>;
+};
+```
+
+## Return Type
+
+`string`

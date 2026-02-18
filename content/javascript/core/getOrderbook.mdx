@@ -1,0 +1,32 @@
+---
+title: Get Orderbook
+description: Fetch orderbook data using the Blux core SDK.
+---
+
+The `getOrderbook` function returns orderbook data for a given asset pair.
+
+The return value contains two properties:
+- `response` — the orderbook record you can use directly
+- `builder` — exposes `next()` and `prev()` to paginate through results
+
+## Type
+```tsx
+export type CallBuilderOptions = {
+  cursor?: string;
+  limit?: number;
+  network?: string;
+  order?: "asc" | "desc";
+};
+
+type GetOrderbookResult = {
+  builder: OrderbookCallBuilder;
+  response: Horizon.ServerApi.OrderbookRecord;
+};
+```
+
+## Usage
+```typescript
+import { core } from "@bluxcc/core";
+
+const result = await core.getOrderbook({});
+```

@@ -1,0 +1,52 @@
+---
+title: Exclude Wallets
+description: Control which wallets appear in the Blux login modal.
+---
+
+import { Callout } from 'fumadocs-ui/components/callout';
+
+The `excludeWallets` option lets you hide specific wallets from the login modal. This is useful when certain wallets don't support features your app depends on — such as `signMessage` or `getNetwork` — helping you avoid user confusion and potential runtime errors.
+
+## Type
+```ts
+type IWalletNames = Array<
+  | "rabet"
+  | "albedo"
+  | "freighter"
+  | "xbull"
+  | "lobstr"
+  | "hana"
+  | "hot"
+  | "klever"
+  | "walletConnect"
+>;
+```
+
+## Default Behavior
+
+By default, Blux excludes `lobstr`. We recommend keeping this unless you have a specific reason to include them.
+
+**Why LOBSTR is excluded** — LOBSTR's `isAvailable()` takes ~2 seconds to respond. During that time, `blux.isReady` stays `false`, which blocks `blux.login()` from opening the modal. If you want to support LOBSTR users, use WalletConnect instead — it connects instantly without requiring the extension or affecting `isReady`.
+
+
+## Usage
+```ts
+// Default behavior — applied automatically if not specified
+createConfig({
+  excludeWallets: ["lobstr"],
+});
+
+// Include all wallets with no exclusions
+createConfig({
+  excludeWallets: [],
+});
+
+// Custom exclusion list
+createConfig({
+  excludeWallets: ["freighter", "albedo", "rabet"],
+});
+```
+
+<Callout type="warn">
+  Including LOBSTR directly may cause delays or unreliable wallet detection. Prefer WalletConnect for LOBSTR support.
+</Callout>

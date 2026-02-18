@@ -1,0 +1,72 @@
+---
+title: Javascript
+description: Integrate Blux into any JavaScript project using the core SDK.
+---
+
+import { Tab, Tabs } from 'fumadocs-ui/components/tabs';
+import { Card, Cards } from 'fumadocs-ui/components/card';
+import { getPageTreePeers } from 'fumadocs-core/page-tree';
+import { source } from '@/lib/source';
+
+The `@bluxcc/core` package is framework-agnostic — use it in any JavaScript or TypeScript project without a framework dependency.
+
+## Installation
+
+Install the Blux core SDK using your package manager of choice:
+
+<Tabs items={['npm', 'pnpm', 'yarn']}>
+  <Tab value="npm">
+```bash
+    npm install @bluxcc/core
+```
+  </Tab>
+  <Tab value="pnpm">
+```bash
+    pnpm add @bluxcc/core
+```
+  </Tab>
+  <Tab value="yarn">
+```bash
+    yarn add @bluxcc/core
+```
+  </Tab>
+</Tabs>
+
+## Setup
+
+Call `createConfig` once at the entry point of your application to initialize Blux. Do not call it more than once.
+
+<Tabs items={['ESM', 'CJS', 'HTML (CDN)']}>
+  <Tab value="ESM">
+```ts
+    import { createConfig, core } from "@bluxcc/core";
+
+    createConfig({
+      appName: "My App",
+      networks: [core.networks.mainnet, core.networks.testnet],
+    });
+```
+  </Tab>
+  <Tab value="CJS">
+```ts
+    const { createConfig, core } = require("@bluxcc/core");
+
+    createConfig({
+      appName: "My App",
+      networks: [core.networks.mainnet, core.networks.testnet],
+    });
+```
+  </Tab>
+  <Tab value="HTML (CDN)">
+```html
+    <script src="https://cdn.jsdelivr.net/npm/@bluxcc/core/dist/index.iife.js"></script>
+
+    <script>
+      Blux.createConfig({
+        appName: "My App",
+        networks: [Blux.core.networks.mainnet, Blux.core.networks.testnet],
+      });
+    </script>
+```
+  </Tab>
+</Tabs>

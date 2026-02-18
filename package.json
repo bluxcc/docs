@@ -13,6 +13,7 @@
     "format": "biome format --write"
   },
   "dependencies": {
+    "debug": "4.3.4",
     "fumadocs-core": "16.6.3",
     "fumadocs-mdx": "14.2.7",
     "fumadocs-ui": "16.6.3",
@@ -23,6 +24,7 @@
     "waku": "1.0.0-alpha.4"
   },
   "devDependencies": {
+    "@biomejs/biome": "^2.4.2",
     "@tailwindcss/vite": "^4.1.18",
     "@types/mdx": "^2.0.13",
     "@types/node": "^25.2.3",
@@ -31,7 +33,6 @@
     "tailwindcss": "^4.1.18",
     "typescript": "^5.9.3",
     "vite": "^7.3.1",
-    "vite-tsconfig-paths": "^6.1.1",
-    "@biomejs/biome": "^2.4.2"
+    "vite-tsconfig-paths": "^6.1.1"
   }
 }

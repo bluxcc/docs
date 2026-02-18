@@ -1,0 +1,33 @@
+---
+title: useSwitchNetwork
+---
+
+The `useSwitchNetwork` hook is used to change the current active network.
+
+:::tip
+
+Switching the active network will impact components like the profile modal and hooks such
+as `useBalance`, `useAccount`, `useTransactions`, and others if the network parameter
+is not explicitly provided to these hooks.
+
+:::
+
+### Usage
+
+```tsx
+import { networks, useSwitchNetwork } from "@bluxcc/react";
+
+const Comp = () => {
+  const { switchNetwork } = useSwitchNetwork();
+
+  const changeNetwork = () => {
+    switchNetwork(networks.mainnet);
+  };
+
+  return (
+    <div>
+      <button onClick={changeNetwork}>Change network to mainnet</button>
+    </div>
+  );
+};
+```

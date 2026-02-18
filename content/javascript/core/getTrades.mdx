@@ -1,0 +1,40 @@
+---
+title: Get Trades
+description: Fetch a paginated list of Stellar trades using the Blux core SDK.
+---
+
+The `getTrades` function returns a paginated list of Stellar trades.
+
+The return value contains two properties:
+- `response` — the records you can use directly
+- `builder` — exposes `next()` and `prev()` to paginate through results
+
+## Type
+```tsx
+export type CallBuilderOptions = {
+  cursor?: string;
+  limit?: number;
+  network?: string;
+  order?: "asc" | "desc";
+};
+
+type GetTradesOptions = CallBuilderOptions & {
+  forAssetPair?: [base: Asset, counter: Asset];
+  forOffer?: string;
+  forType?: Horizon.ServerApi.TradeType;
+  forAccount?: string;
+  forLiquidityPool?: string;
+};
+
+type GetTradesResult = {
+  builder: TradesCallBuilder;
+  response: Horizon.ServerApi.CollectionPage<Horizon.ServerApi.TradeRecord>;
+};
+```
+
+## Usage
+```typescript
+import { core } from "@bluxcc/core";
+
+const result = await core.getTrades({});
+```

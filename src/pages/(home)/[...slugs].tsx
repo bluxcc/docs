@@ -3,7 +3,7 @@ import { PageProps } from 'waku/router';
 import defaultMdxComponents from 'fumadocs-ui/mdx';
 import { DocsBody, DocsDescription, DocsPage, DocsTitle } from 'fumadocs-ui/layouts/docs/page';
 
-export default function DocPage({ slugs }: PageProps<'/docs/[...slugs]'>) {
+export default function DocPage({ slugs }: PageProps<'/[...slugs]'>) {
   const page = source.getPage(slugs);
 
   if (!page) {

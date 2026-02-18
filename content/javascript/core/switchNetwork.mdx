@@ -1,0 +1,13 @@
+---
+title: Switch Network
+description: Switch the active network in your Blux app at runtime.
+---
+
+The `switchNetwork` function switches the app to a different network. The target network must be included in the `networks` array defined in `createConfig`.
+
+## Usage
+```typescript
+import { core } from "@bluxcc/core";
+
+core.switchNetwork(core.networks.testnet);
+```

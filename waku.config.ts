@@ -7,9 +7,23 @@ import type { UserConfig } from 'vite';
 
 export default defineConfig({
   vite: {
-    // we do this to avoid Vite from bundling React contexts and cause duplicated contexts conflicts.
+     server: {
+      host: "127.0.0.1",
+      port: 3000,
+    },
     optimizeDeps: {
-      exclude: ['fumadocs-ui', 'fumadocs-core'],
+     exclude: ['fumadocs-ui', 'fumadocs-core'],
+      include: [
+        'debug',
+        'extend',
+        'style-to-js',
+        'fumadocs-ui > debug',
+        'fumadocs-core > debug',
+        'fumadocs-ui > extend',
+        'fumadocs-core > extend',
+        'fumadocs-ui > style-to-js',
+        'fumadocs-core > style-to-js',
+      ],
     },
 
     plugins: [tailwindcss(), mdx(MdxConfig), tsconfigPaths()],

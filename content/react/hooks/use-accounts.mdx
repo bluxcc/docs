@@ -1,0 +1,222 @@
+---
+title: useAccounts
+description: Fetch a filtered list of Stellar accounts in your React app using the Blux SDK.
+---
+
+import { Tab, Tabs } from 'fumadocs-ui/components/tabs';
+import { Callout } from 'fumadocs-ui/components/callout';
+
+The `useAccounts` hook returns a paginated list of Stellar accounts matching the given filters. At least one filter — `forSigner`, `forAsset`, `sponsor`, or `forLiquidityPool` — must be provided.
+
+## Import
+```tsx
+import { useAccounts } from "@bluxcc/react";
+```
+
+## Usage
+
+Filter by asset to fetch all accounts holding a specific token:
+
+<Tabs items={['index.tsx', 'config.ts']}>
+<Tab value="index.tsx">
+```tsx
+import { useAccounts, Asset } from "@bluxcc/react";
+
+function App() {
+  const { data } = useAccounts({
+    forAsset: new Asset("USDC", "GA5ZSEJYB37JRC5AVCIA5MOP4RHTM335X2KGX3IHOJAPP5RE34K4KZVN")
+  });
+}
+```
+</Tab>
+<Tab value="config.ts">
+```tsx
+root.render(
+  <BluxProvider
+    config={{
+      appName: "MyApp",
+      networks: [networks.testnet, networks.mainnet],
+    }}
+  >
+    <App />
+  </BluxProvider>
+);
+```
+</Tab>
+</Tabs>
+
+Combine with `useBlux` to fetch accounts only when the user is authenticated:
+
+<Tabs items={['index.tsx', 'config.ts']}>
+<Tab value="index.tsx">
+```tsx
+import { useAccounts, useBlux } from "@bluxcc/react";
+
+function App() {
+  const { user, isAuthenticated } = useBlux();
+  const { data } = useAccounts(
+    { forSigner: user.address },
+    { enabled: isAuthenticated }
+  );
+}
+```
+</Tab>
+<Tab value="config.ts">
+```tsx
+root.render(
+  <BluxProvider
+    config={{
+      appName: "MyApp",
+      networks: [networks.testnet, networks.mainnet],
+    }}
+  >
+    <App />
+  </BluxProvider>
+);
+```
+</Tab>
+</Tabs>
+
+Pass TanStack Query options as a second argument to customize caching and refetch behavior:
+
+<Tabs items={['index.tsx', 'config.ts']}>
+<Tab value="index.tsx">
+```tsx
+import { useAccounts, Asset } from "@bluxcc/react";
+
+function App() {
+  const { data } = useAccounts(
+    { forAsset: new Asset("USDC", "GA5Z...4KZVN") },
+    { retry: 3, staleTime: 60000 }
+  );
+}
+```
+</Tab>
+<Tab value="config.ts">
+```tsx
+root.render(
+  <BluxProvider
+    config={{
+      appName: "MyApp",
+      networks: [networks.testnet, networks.mainnet],
+    }}
+  >
+    <App />
+  </BluxProvider>
+);
+```
+</Tab>
+</Tabs>
+
+<Callout type="info">
+  Always pass core parameters first, then TanStack Query options. The hook relies on this order to work correctly.
+</Callout>
+
+## Parameters
+
+### `forSigner`
+`string | undefined`
+
+Filter accounts that list the given address as a signer.
+
+### `forAsset`
+`Asset | undefined`
+
+Filter accounts that hold the specified asset. Import `Asset` from `@bluxcc/react`.
+
+### `sponsor`
+`string | undefined`
+
+Filter accounts sponsored by the specified account ID.
+
+### `forLiquidityPool`
+`string | undefined`
+
+Filter accounts related to a specific liquidity pool ID.
+
+### `cursor`
+`string | undefined`
+
+Pagination cursor for fetching the next or previous page.
+
+### `limit`
+`number | undefined`
+
+Number of records to return per page.
+
+### `network`
+`string | undefined`
+
+The network to query. Omit to use the active network.
+
+### `order`
+`'asc' | 'desc' | undefined`
+
+Sort order for the results.
+
+## Query Options
+
+| Option | Type | Default | Description |
+|---|---|---|---|
+| `enabled` | `boolean` | `true` | Set to `false` to disable automatic fetching |
+| `staleTime` | `number \| Infinity` | `0` | Time in ms before data is considered stale |
+| `gcTime` | `number \| Infinity` | `300000` | Time in ms before inactive cache data is garbage collected |
+| `retry` | `boolean \| number` | `3` | How many times to retry on failure |
+| `retryDelay` | `number \| function` | — | Delay in ms between retry attempts |
+| `refetchInterval` | `number \| false \| function` | — | Continuously refetch at this interval in ms |
+| `refetchOnMount` | `boolean \| 'always'` | `true` | Refetch on component mount if data is stale |
+| `refetchOnWindowFocus` | `boolean \| 'always'` | `true` | Refetch when the window regains focus |
+| `refetchOnReconnect` | `boolean \| 'always'` | `true` | Refetch when network reconnects |
+| `refetchIntervalInBackground` | `boolean` | — | Keep refetching even when tab is in background |
+| `placeholderData` | `GetAccountsResult \| function` | — | Placeholder data shown while query is pending (not persisted to cache) |
+| `initialData` | `GetAccountsResult \| function` | — | Initial data for the cache (persisted) |
+| `initialDataUpdatedAt` | `number \| function` | — | Timestamp of when `initialData` was last updated |
+| `select` | `function` | — | Transform or select a subset of the returned data |
+| `notifyOnChangeProps` | `string[] \| 'all'` | — | Limit re-renders to specific property changes |
+| `structuralSharing` | `boolean \| function` | `true` | Retain references from old data for performance |
+| `networkMode` | `'online' \| 'always' \| 'offlineFirst'` | `'online'` | Controls when queries can run relative to network status |
+| `meta` | `Record<string, unknown>` | — | Attach arbitrary metadata to the query cache entry |
+| `queryClient` | `QueryClient` | — | Use a custom QueryClient instead of the nearest context one |
+
+## Return Type
+
+### `data`
+`GetAccountsResult | undefined`
+```tsx
+type GetAccountsResult = {
+  builder: AccountCallBuilder; // .next() and .prev() for pagination
+  response: Horizon.ServerApi.CollectionPage<Horizon.ServerApi.AccountRecord>;
+};
+```
+
+### Status Booleans
+
+| Property | Type | Description |
+|---|---|---|
+| `isPending` | `boolean` | No cached data and no completed fetch yet |
+| `isSuccess` | `boolean` | Query resolved successfully |
+| `isError` | `boolean` | Query failed |
+| `isLoading` | `boolean` | First fetch in-flight (`isFetching && isPending`) |
+| `isFetching` | `boolean` | Query function is currently executing |
+| `isRefetching` | `boolean` | Background refetch in progress |
+| `isFetched` | `boolean` | Query has been fetched at least once |
+| `isFetchedAfterMount` | `boolean` | Query fetched after component mounted |
+| `isStale` | `boolean` | Cached data is stale or older than `staleTime` |
+| `isPlaceholderData` | `boolean` | Currently showing placeholder data |
+| `isLoadingError` | `boolean` | Failed on the first fetch |
+| `isRefetchError` | `boolean` | Failed during a background refetch |
+| `isPaused` | `boolean` | Query wanted to fetch but was paused |
+
+### Other Returns
+
+| Property | Type | Description |
+|---|---|---|
+| `status` | `'pending' \| 'success' \| 'error'` | Current query status |
+| `fetchStatus` | `'fetching' \| 'idle' \| 'paused'` | Current fetch status |
+| `error` | `null \| Error` | Error object if the query failed |
+| `dataUpdatedAt` | `number` | Timestamp of last successful fetch |
+| `errorUpdatedAt` | `number` | Timestamp of last error |
+| `errorUpdateCount` | `number` | Total number of errors |
+| `failureCount` | `number` | Failures since last success |
+| `failureReason` | `null \| Error` | Reason for last retry failure |
+| `refetch` | `function` | Manually trigger a refetch |

@@ -1,0 +1,40 @@
+---
+title: Transports
+description: Configure custom RPC endpoints for each network in your Blux app.
+---
+
+The `transports` option lets you specify custom Horizon and Soroban RPC endpoints for each network in your config. Blux uses these as the intermediary layer for all outgoing RPC requests.
+
+If no transport is provided for a network, Blux falls back to the default public RPC endpoints.
+
+## Type
+```ts
+interface IServers {
+  horizon: string;
+  soroban: string;
+}
+
+type ITransports = Record<string, IServers>;
+```
+
+## Usage
+```ts
+import { createConfig, core } from "@bluxcc/core";
+
+createConfig({
+  appName: "MyApp",
+  networks: [core.networks.mainnet, core.networks.testnet],
+  transports: {
+    [core.networks.mainnet]: {
+      horizon: "https://horizon.mydomain.org",
+      soroban: "https://mainnetsorobanrpc.mydomain.org",
+    },
+    [core.networks.testnet]: {
+      horizon: "https://testnethorizon.mydomain.org",
+      soroban: "https://testnetsorobanrpc.mydomain.org",
+    },
+  },
+});
+```
+
+Each key in the `transports` object must match a network string from your `networks` array. Custom networks also require a transport entry — see the [Networks](/configuration/networks) page for details.

@@ -1,0 +1,50 @@
+---
+title: Login Methods
+description: Control which authentication methods are available in the Blux login modal.
+---
+
+import { Tab, Tabs } from 'fumadocs-ui/components/tabs';
+import { Callout } from 'fumadocs-ui/components/callout';
+
+The `loginMethods` option defines which authentication methods are shown in the login modal. The order of the array also determines the display order — so the first item in the list will appear most prominently during onboarding.
+
+## Type
+```ts
+loginMethods?: Array<
+  | 'wallet'
+  | 'email'
+  | 'sms'
+  | 'google'
+  | 'twitter'
+  | 'discord'
+  | 'github'
+  | 'passkey'
+>;
+```
+
+## Usage
+
+<Tabs items={['React', 'Vanilla JS']}>
+<Tab value="React">
+```tsx
+<BluxProvider
+  config={{
+    loginMethods: ["wallet", "email", "sms", "passkey"],
+  }}
+>
+  {children}
+</BluxProvider>
+```
+</Tab>
+<Tab value="Vanilla JS">
+```ts
+createConfig({
+  loginMethods: ["wallet", "email", "sms", "passkey"],
+});
+```
+</Tab>
+</Tabs>
+
+<Callout type="info">
+  Want to see the login methods in action? [Try the live demo →](https://demo.blux.cc)
+</Callout>

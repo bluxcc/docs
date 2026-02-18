@@ -1,0 +1,88 @@
+---
+title: React
+description: Integrate Blux into your React or Next.js application.
+---
+
+import { Tab, Tabs } from 'fumadocs-ui/components/tabs';
+import { Card, Cards } from 'fumadocs-ui/components/card';
+import { getPageTreePeers } from 'fumadocs-core/page-tree';
+import { source } from '@/lib/source';
+
+The `@bluxcc/react` package provides a React-first integration with built-in hooks and components, compatible with any React-based framework including Next.js, Vite, and Create React App.
+
+**Requirements:** React 17 or higher.
+
+## Installation
+
+Install the Blux React SDK using your package manager of choice:
+
+<Tabs items={['npm', 'pnpm', 'yarn']}>
+  <Tab value="npm">
+```bash
+    npm install @bluxcc/react
+```
+  </Tab>
+  <Tab value="pnpm">
+```bash
+    pnpm add @bluxcc/react
+```
+  </Tab>
+  <Tab value="yarn">
+```bash
+    yarn add @bluxcc/react
+```
+  </Tab>
+</Tabs>
+
+## Setup
+
+Wrap your app with `BluxProvider` to give any component access to the Blux SDK. Place it as close to the root of your application as possible.
+
+<Tabs items={['Next.js', 'Vite / CRA']}>
+  <Tab value="Next.js">
+```tsx
+    "use client";
+
+    import { networks, BluxProvider } from "@bluxcc/react";
+
+    export default function Providers({ children }: { children: React.ReactNode }) {
+      return (
+        <BluxProvider
+          config={{
+            appName: "MyApp",
+            networks: [networks.testnet, networks.mainnet],
+            defaultNetwork: networks.mainnet,
+          }}
+        >
+          {children}
+        </BluxProvider>
+      );
+    }
+```
+  </Tab>
+  <Tab value="Vite / CRA">
+```tsx
+    import React from "react";
+    import ReactDOM from "react-dom/client";
+    import { networks, BluxProvider } from "@bluxcc/react";
+    import App from "./App";
+
+    const root = ReactDOM.createRoot(document.getElementById("root")!);
+
+    root.render(
+      <React.StrictMode>
+        <BluxProvider
+          config={{
+            appName: "MyApp",
+            networks: [networks.testnet, networks.mainnet],
+            defaultNetwork: networks.mainnet,
+          }}
+        >
+          <App />
+        </BluxProvider>
+      </React.StrictMode>,
+    );
+```
+  </Tab>
+</Tabs>
+

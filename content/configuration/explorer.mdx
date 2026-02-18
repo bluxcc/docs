@@ -1,0 +1,38 @@
+---
+title: Explorer
+description: Configure which Stellar block explorer Blux uses for transaction links.
+---
+
+import { Tab, Tabs } from 'fumadocs-ui/components/tabs';
+
+The `explorer` option sets which Stellar block explorer is used when a user clicks transaction links — such as "See all in explorer" on the history page, a recent transaction entry, or "See in explorer" after a successful transaction.
+
+The default is `stellarchain`.
+
+## Type
+```ts
+type IExplorer = "steexp" | "stellarchain" | "stellarexpert" | "lumenscan";
+```
+
+## Usage
+
+<Tabs items={['React', 'Vanilla JS']}>
+<Tab value="React">
+```tsx
+<BluxProvider
+  config={{
+    explorer: "lumenscan",
+  }}
+>
+  {children}
+</BluxProvider>
+```
+</Tab>
+<Tab value="Vanilla JS">
+```ts
+createConfig({
+  explorer: "lumenscan",
+});
+```
+</Tab>
+</Tabs>

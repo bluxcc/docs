@@ -1,0 +1,39 @@
+---
+title: Get Strict Send Paths
+description: Fetch strict send payment paths using the Blux core SDK.
+---
+
+The `getStrictSendPaths` function returns available payment paths for a strict send operation.
+
+The return value contains two properties:
+- `response` — the records you can use directly
+- `builder` — exposes `next()` and `prev()` to paginate through results
+
+## Type
+```tsx
+export type CallBuilderOptions = {
+  cursor?: string;
+  limit?: number;
+  network?: string;
+  order?: "asc" | "desc";
+};
+
+type GetPaymentPathResult = {
+  builder: PathCallBuilder;
+  response: Horizon.ServerApi.CollectionPage<Horizon.ServerApi.PaymentPathRecord>;
+};
+```
+
+## Usage
+```typescript
+import { core } from "@bluxcc/core";
+
+const result = await core.getStrictSendPaths(
+  [
+    sourceAsset: Asset,
+    sourceAmount: string,
+    destination: string | Asset[],
+  ],
+  options
+);
+```

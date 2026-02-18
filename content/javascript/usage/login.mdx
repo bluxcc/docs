@@ -1,0 +1,27 @@
+---
+title: Login
+description: Authenticate users in your Stellar dApp with Blux's built-in login flow.
+---
+
+import { Callout } from 'fumadocs-ui/components/callout';
+
+The `blux.login()` method opens the Blux authentication modal, giving users a seamless way to connect with email, phone, social accounts, passkeys, or an existing wallet.
+
+<img src="/img/Login.png" style={{ width: "40%" }} alt="Login modal" />
+
+## Usage
+```tsx
+import { blux } from "@bluxcc/core";
+
+blux.login();
+
+// blux.logout();
+
+console.log(blux.user);
+console.log(blux.isReady);
+console.log(blux.isAuthenticated);
+```
+
+<Callout type="info">
+  Keep your Connect button disabled until `blux.isReady` is `true`. This ensures all wallets have reported availability before the modal opens.
+</Callout>

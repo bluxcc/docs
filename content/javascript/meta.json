@@ -1,0 +1,8 @@
+{
+  "title": "Javascript",
+  "defaultOpen": true,
+  "pages": [
+    "core",
+    "usage"
+  ]
+}

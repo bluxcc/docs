@@ -1,0 +1,65 @@
+---
+title: Send Transaction
+---
+
+To submit transactions using Blux, use the `sendTransaction` function provided by the `useBlux` hook.
+
+### Type
+
+```typescript
+type IOptions = {
+  network?: string;
+  isSoroban?: boolean;
+};
+
+const sendTransaction: (xdr: string, options?: IOptions);
+```
+
+- `xdr`:  The base64-encoded XDR string of the transaction.
+- `options (optional)`:
+    - `isSoroban (boolean) (optional)` – Set to true if the transaction is for Soroban smart contracts.
+
+    - `network (string) (optional)` – Optionally specify the network. If omitted, Blux will use the current active network.
+
+
+<Callout title="Title" type="idea">
+
+If `isSoroban` is set to true, `sendTransaction` will return `Promise<rpc.Api.GetSuccessfulTransactionResponse>`.
+Otherwise, it will return `Promise<Horizon.HorizonApi.SubmitTransactionResponse>`.
+
+</Callout>
+
+### Usage
+
+```typescript
+const { sendTransaction } = useBlux();
+
+const sendTx = async () => {
+    try {
+        const options = {
+            isSoroban: true,
+        };
+
+        const result = await sendTransaction(xdr, options);
+
+        console.log('Transaction submitted');
+        console.log(result);
+    } catch (error) {
+        console.error('Something went wrong!');
+        console.log(error);
+    }
+}
+```
+
+When you call sendTransaction, Blux shows a confirmation modal to the user.
+This modal displays the transaction details, the estimated fee,
+and the account that will submit the transaction.
+It gives users a clear overview before they approve the action.
+
+:::tip
+
+If you don’t want this confirmation modal to appear, you can disable it by setting 
+`showWalletUIs: false` in the BluxProvider configuration.
+This is useful if you're building your own custom confirmation flow.
+
+:::

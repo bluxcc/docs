@@ -1,0 +1,41 @@
+---
+title: Get Operations
+description: Fetch a paginated list of Stellar operations using the Blux core SDK.
+---
+
+The `getOperations` function returns a paginated list of Stellar operations.
+
+The return value contains two properties:
+- `response` — the records you can use directly
+- `builder` — exposes `next()` and `prev()` to paginate through results
+
+## Type
+```tsx
+export type CallBuilderOptions = {
+  cursor?: string;
+  limit?: number;
+  network?: string;
+  order?: "asc" | "desc";
+};
+
+type GetOperationsOptions = CallBuilderOptions & {
+  forAccount?: string;
+  forClaimableBalance?: string;
+  forLedger?: string | number;
+  forTransaction?: string;
+  forLiquidityPool?: string;
+  includeFailed?: boolean;
+};
+
+type GetOperationsResult = {
+  builder: OperationCallBuilder;
+  response: Horizon.ServerApi.CollectionPage<Horizon.ServerApi.OperationRecord>;
+};
+```
+
+## Usage
+```typescript
+import { core } from "@bluxcc/core";
+
+const result = await core.getOperations({});
+```

@@ -1,0 +1,20 @@
+---
+title: Configuration
+description: Customize and configure every aspect of your Blux integration.
+---
+
+import { Card, Cards } from 'fumadocs-ui/components/card';
+import { getPageTreePeers } from 'fumadocs-core/page-tree';
+import { source } from '@/lib/source';
+
+Blux is designed to be flexible. Every aspect of the integration — from which wallets and login methods appear, to the visual style of the modal — can be configured to fit your app.
+
+All configuration is passed to `createConfig` (Vanilla JS) or `BluxProvider` (React) at initialization. Every option below is optional unless stated otherwise.
+
+<Cards>
+  {getPageTreePeers(source.getPageTree(), '/configuration').map((peer) => (
+    <Card key={peer.url} title={peer.name} href={peer.url}>
+      {peer.description}
+    </Card>
+  ))}
+</Cards>

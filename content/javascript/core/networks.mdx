@@ -1,0 +1,24 @@
+---
+title: Networks
+description: Access the list of available Stellar networks from the Blux core SDK.
+---
+
+## Import
+```typescript
+import { core } from "@bluxcc/core";
+
+core.networks;
+```
+
+## Available Networks
+```typescript
+import { Networks } from "@stellar/stellar-sdk";
+
+export const networks = {
+  mainnet:    Networks.PUBLIC,     // 'Public Global Stellar Network ; September 2015'
+  testnet:    Networks.TESTNET,    // 'Test SDF Network ; September 2015'
+  sandbox:    Networks.SANDBOX,    // 'Local Sandbox Stellar Network ; September 2022'
+  futurenet:  Networks.FUTURENET,  // 'Test SDF Future Network ; October 2022'
+  standalone: Networks.STANDALONE, // 'Standalone Network ; February 2017'
+};
+```

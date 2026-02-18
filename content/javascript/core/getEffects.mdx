@@ -1,0 +1,40 @@
+---
+title: Get Effects
+description: Fetch a paginated list of Stellar effects using the Blux core SDK.
+---
+
+The `getEffects` function returns a paginated list of Stellar effects.
+
+The return value contains two properties:
+- `response` — the records you can use directly
+- `builder` — exposes `next()` and `prev()` to paginate through results
+
+## Type
+```tsx
+export type CallBuilderOptions = {
+  cursor?: string;
+  limit?: number;
+  network?: string;
+  order?: "asc" | "desc";
+};
+
+type GetEffectsOptions = CallBuilderOptions & {
+  forAccount?: string;
+  forLedger?: string | number;
+  forTransaction?: string;
+  forOperation?: string;
+  forLiquidityPool?: string;
+};
+
+type GetEffectsResult = {
+  builder: EffectCallBuilder;
+  response: Horizon.ServerApi.CollectionPage<Horizon.ServerApi.EffectRecord>;
+};
+```
+
+## Usage
+```typescript
+import { core } from "@bluxcc/core";
+
+const result = await core.getEffects({});
+```

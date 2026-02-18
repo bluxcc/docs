@@ -1,0 +1,40 @@
+---
+title: Get Transactions
+description: Fetch a paginated list of Stellar transactions using the Blux core SDK.
+---
+
+The `getTransactions` function returns a paginated list of Stellar transactions.
+
+The return value contains two properties:
+- `response` — the records you can use directly
+- `builder` — exposes `next()` and `prev()` to paginate through results
+
+## Type
+```tsx
+export type CallBuilderOptions = {
+  cursor?: string;
+  limit?: number;
+  network?: string;
+  order?: "asc" | "desc";
+};
+
+type GetTransactionsOptions = CallBuilderOptions & {
+  forAccount?: string;
+  forClaimableBalance?: string;
+  forLedger?: string | number;
+  forLiquidityPool?: string;
+  includeFailed?: boolean;
+};
+
+type GetTransactionsResult = {
+  builder: TransactionCallBuilder;
+  response: Horizon.ServerApi.CollectionPage<Horizon.ServerApi.TransactionRecord>;
+};
+```
+
+## Usage
+```typescript
+import { core } from "@bluxcc/core";
+
+const result = await core.getTransactions({});
+```

@@ -1,0 +1,36 @@
+---
+title: Get Ledgers
+description: Fetch a paginated list of Stellar ledgers using the Blux core SDK.
+---
+
+The `getLedgers` function returns a paginated list of Stellar ledgers.
+
+The return value contains two properties:
+- `response` — the records you can use directly
+- `builder` — exposes `next()` and `prev()` to paginate through results
+
+## Type
+```tsx
+export type CallBuilderOptions = {
+  cursor?: string;
+  limit?: number;
+  network?: string;
+  order?: "asc" | "desc";
+};
+
+type GetLedgersOptions = CallBuilderOptions & {
+  ledger?: number | string;
+};
+
+type GetLedgersResult = {
+  builder: LedgerCallBuilder;
+  response: Horizon.ServerApi.CollectionPage<Horizon.ServerApi.LedgerRecord>;
+};
+```
+
+## Usage
+```typescript
+import { core } from "@bluxcc/core";
+
+const result = await core.getLedgers({});
+```

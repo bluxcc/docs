@@ -1,0 +1,97 @@
+---
+title: Networks
+description: Configure which Stellar networks your app supports.
+---
+
+import { Tab, Tabs } from 'fumadocs-ui/components/tabs';
+import { Callout } from 'fumadocs-ui/components/callout';
+
+The `networks` option defines which Stellar networks your app supports. If a connected wallet is on a network not in this list, Blux will prompt the user to switch.
+
+## Available Networks
+```ts
+import { core } from "@bluxcc/core";
+
+// core.networks exposes:
+{
+  mainnet:    'Public Global Stellar Network ; September 2015',
+  testnet:    'Test SDF Network ; September 2015',
+  sandbox:    'Local Sandbox Stellar Network ; September 2022',
+  futurenet:  'Test SDF Future Network ; October 2022',
+  standalone: 'Standalone Network ; February 2017',
+}
+```
+
+## Usage
+
+<Tabs items={['React', 'Vanilla JS']}>
+<Tab value="React">
+```tsx
+<BluxProvider
+  config={{
+    appName: "MyApp",
+    networks: [networks.mainnet, networks.testnet],
+    defaultNetwork: networks.mainnet,
+  }}
+>
+  {children}
+</BluxProvider>
+```
+</Tab>
+<Tab value="Vanilla JS">
+```ts
+import { core } from "@bluxcc/core";
+
+createConfig({
+  appName: "My App",
+  networks: [core.networks.mainnet, core.networks.testnet],
+  defaultNetwork: core.networks.mainnet,
+});
+```
+</Tab>
+</Tabs>
+
+If you only pass one network, `defaultNetwork` is optional — Blux will use the first item in the array automatically. You can change the active network later using `switchNetwork()`.
+
+<Callout type="info">
+  Network switching prompts only appear for wallets that support `getNetwork()`, such as Rabet and Freighter. You can disable this behavior entirely by setting `promptOnWrongNetwork: false` in your config.
+</Callout>
+
+## Custom Networks
+
+If you need a network not in the built-in list, define it as a string and pass it to the `networks` array:
+```ts
+const customNetwork = "Standalone Network ; February 2020";
+
+createConfig({
+  appName: "MyApp",
+  networks: [customNetwork],
+});
+```
+
+Make sure to also define a transport for any custom network. See the Transports page for details.
+
+## Auto Sync
+
+Blux periodically checks the connected wallet's active network. By default, it keeps the app's network in sync with the wallet — as long as the wallet's network is one of the supported networks in your config.
+
+If your app calls `switchNetwork()` directly, Blux treats that as an app-controlled override and disables automatic syncing from that point on to prevent conflicts.
+
+### Example
+
+Given this config:
+```ts
+{
+  networks: [networks.testnet, networks.futurenet],
+}
+```
+
+| Step | Event | Result |
+|------|-------|--------|
+| 1 | Alice connects Freighter on **Mainnet** | Mainnet is unsupported → Wrong Network modal shown, app stays on **Testnet** |
+| 2 | Alice switches Freighter to **Futurenet** | Supported → modal closes, app switches to **Futurenet** |
+| 3 | Alice switches Freighter to **Testnet** | Supported → app auto-syncs to **Testnet** |
+| 4 | App calls `switchNetwork(futurenet)` | App moves to **Futurenet**, auto-sync is now disabled |
+| 5 | Alice toggles between Testnet/Futurenet | Wallet changes, app stays on **Futurenet** |
+| 6 | Alice switches to **Mainnet** | Unsupported → Wrong Network modal, app stays on **Futurenet** |
+| 7 | Alice switches back to **Testnet** | Modal dismissed, but app still stays on **Futurenet** (auto-sync still off) |

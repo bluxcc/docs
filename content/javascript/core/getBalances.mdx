@@ -1,0 +1,24 @@
+---
+title: Get Balances
+description: Fetch the balances of a Stellar account using the Blux core SDK.
+---
+
+The `getBalances` function returns the balances of a Stellar account. Omit `address` to use the connected account, and omit `network` to use the currently active network.
+
+## Type
+```tsx
+type GetBalancesOptions = {
+  address?: string; // Ignore to get the details of the connected account.
+  network?: string; // Ignore to use the current active network
+  includeZeroBalances?: boolean;
+};
+
+type GetBalancesResult = Horizon.HorizonApi.BalanceLine[];
+```
+
+## Usage
+```typescript
+import { core } from "@bluxcc/core";
+
+const result = await core.getBalances({});
+```

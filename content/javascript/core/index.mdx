@@ -1,0 +1,21 @@
+---
+title: Core
+description: Low-level Stellar primitives available across all Blux integrations.
+---
+
+import { Card, Cards } from 'fumadocs-ui/components/card';
+import { getPageTreePeers } from 'fumadocs-core/page-tree';
+import { source } from '@/lib/source';
+
+The `core` module provides direct access to Stellar network data and utilities — use it to read accounts, balances, transactions, offers, and more without managing Horizon connections manually.
+```ts
+import { core } from "@bluxcc/core";
+```
+
+<Cards>
+  {getPageTreePeers(source.getPageTree(), '/javascript/core').map((peer) => (
+    <Card key={peer.url} title={peer.name} href={peer.url}>
+      {peer.description}
+    </Card>
+  ))}
+</Cards>

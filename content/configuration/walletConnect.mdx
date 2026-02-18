@@ -1,0 +1,35 @@
+---
+title: Wallet Connect
+description: Enable WalletConnect support in your Blux app.
+---
+
+import { Callout } from 'fumadocs-ui/components/callout';
+
+Adding the `walletConnect` object to your config enables WalletConnect as a login option. Once configured, users will see a **Wallet Connect** option in the login modal.
+
+## Usage
+```ts
+createConfig({
+  appName: "My App",
+  networks: [core.networks.mainnet],
+  walletConnect: {
+    projectId: "YOUR_PROJECT_ID",
+    url: "https://yourapp.com",
+    description: "A short description of your app",
+    icons: ["https://yourapp.com/icon.png"],
+  },
+});
+```
+
+## Options
+
+| Option | Type | Description |
+|---|---|---|
+| `projectId` | `string` | Your WalletConnect project ID — get one from the [WalletConnect dashboard](https://cloud.walletconnect.com) |
+| `url` | `string` | The URL of your app, used to identify it during the connection flow |
+| `description` | `string` | A short description of your app shown inside the wallet |
+| `icons` | `string[]` | Array of image URLs used as your app icon in supported wallets |
+
+<Callout type="info">
+  WalletConnect is the recommended way to support LOBSTR users, as it connects instantly without requiring the browser extension. See [Exclude Wallets](/configuration/exclude-wallets) for more context.
+</Callout>

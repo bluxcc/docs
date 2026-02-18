@@ -1,0 +1,107 @@
+---
+title: Appearance
+description: Customize the look and feel of the Blux modal to match your dApp's branding.
+---
+
+import { Tab, Tabs } from 'fumadocs-ui/components/tabs';
+import { Callout } from 'fumadocs-ui/components/callout';
+
+Blux is easy to style so it fits the look and feel of your app. You can adjust fonts, colors, borders, and backgrounds to match your design system. Every field is optional — if you leave something out, Blux falls back to the default theme for that field.
+
+## Setup
+
+Pass an `appearance` object when initializing Blux:
+
+<Tabs items={['React', 'Vanilla JS']}>
+  <Tab value="React">
+```tsx
+<BluxProvider
+  config={{
+    appName: "MyApp",
+    networks: [networks.mainnet],
+    appearance: {
+      accentColor: "#0070f3",
+      borderRadius: "16px",
+    },
+  }}
+>
+  {children}
+</BluxProvider>
+```
+  </Tab>
+  <Tab value="Vanilla JS">
+```ts
+createConfig({
+  appName: "MyApp",
+  networks: [core.networks.mainnet],
+  appearance: {
+    accentColor: "#0070f3",
+    borderRadius: "16px",
+  },
+});
+```
+  </Tab>
+</Tabs>
+
+## Default Themes
+
+Blux ships with built-in light and dark defaults applied automatically based on the user's system preference.
+
+<Tabs items={['Light', 'Dark']}>
+  <Tab value="Light">
+```ts
+{
+  logo: '',
+  font: 'Manrope',
+  textColor: '#000000',
+  accentColor: '#0c1083',
+  background: '#ffffff',
+  fieldBackground: '#ffffff',
+  borderRadius: '24px',
+  borderColor: '#cdceee',
+  borderWidth: '1px',
+  outlineWidth: '1px',
+}
+```
+  </Tab>
+  <Tab value="Dark">
+```ts
+{
+  logo: '',
+  font: 'Manrope',
+  textColor: '#ffffff',
+  accentColor: '#ffffff',
+  background: '#000000',
+  fieldBackground: '#1a1a1a',
+  borderRadius: '24px',
+  borderColor: '#333333',
+  borderWidth: '1px',
+  outlineWidth: '1px',
+}
+```
+  </Tab>
+</Tabs>
+
+## Properties
+
+| Property | Type | Description |
+|---|---|---|
+| `logo` | `string` | URL of your app logo displayed in the modal |
+| `font` | `string` | Font family for all modal text |
+| `textColor` | `string` | Main text color |
+| `accentColor` | `string` | Primary highlight or action color |
+| `background` | `string` | Modal background color or image |
+| `fieldBackground` | `string` | Background color for input fields |
+| `borderRadius` | `string` | Corner radius for UI elements (e.g. `16px`) |
+| `borderColor` | `string` | Border color for elements |
+| `borderWidth` | `string` | Border width (e.g. `1px`, `0`) |
+| `backdropBlur` | `string` | Blur intensity behind the modal (e.g. `8px`) |
+| `backdropColor` | `string` | Overlay color behind the modal |
+| `boxShadow` | `string` | Box shadow applied to the modal |
+| `outlineWidth` | `string` | Outline width — falls back to `borderWidth` |
+| `outlineColor` | `string` | Outline color — falls back to `borderColor` |
+| `outlineRadius` | `string` | Outline corner radius — falls back to `borderRadius` |
+
+<Callout type="info">
+  Want to experiment with the appearance settings visually? [Try the live demo →](https://demo.blux.cc)
+</Callout>

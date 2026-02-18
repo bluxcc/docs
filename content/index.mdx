@@ -1,0 +1,50 @@
+---
+title: Introduction
+description: The complete wallet infrastructure for Stellar dApps.
+---
+
+import { Callout } from 'fumadocs-ui/components/callout';
+import { Tab, Tabs } from 'fumadocs-ui/components/tabs';
+import { Card, Cards } from 'fumadocs-ui/components/card';
+import { LogIn, Webhook, Palette, Code2, Blocks, FileCode } from 'lucide-react';
+
+Blux is wallet infrastructure for Stellar dApps — designed to make onboarding seamless, even for users who don't have a wallet yet.
+
+Users can sign in instantly with **email**, **social accounts** (Google or Apple), **passkeys**, or an existing **wallet**. No friction, no setup, no barriers.
+
+## What's Included
+
+<Cards>
+  <Card title="Multiple Auth Methods" icon={<LogIn />} description="Email, social, passkeys, and wallets — all out of the box." />
+  <Card title="Built-in Hooks" icon={<Webhook />} description="Transaction signing, balances, swap, history, and on/off-ramp modals." />
+  <Card title="Customizable UI" icon={<Palette />} description="Match your dApp's branding with a fully configurable modal." />
+  <Card title="TypeScript Ready" icon={<Code2 />} description="Full type safety with clean, modern APIs." />
+</Cards>
+
+## Quick Start
+
+Pick your package based on your stack:
+
+<Tabs items={['React', 'JavaScript']}>
+<Tab value="React">
+```bash
+npm install @bluxcc/react
+```
+</Tab>
+<Tab value="JavaScript">
+```bash
+npm install @bluxcc/core
+```
+</Tab>
+</Tabs>
+
+Then follow the setup guide for your framework:
+
+<Cards>
+  <Card title="React" href="/react" icon={<Blocks />} description="For React, Next.js, Vite, and CRA projects." />
+  <Card title="JavaScript" href="/javascript" icon={<FileCode />} description="For framework-agnostic or vanilla JS projects." />
+</Cards>
+
+<Callout type="info">
+  Want to see Blux in action before integrating? [Try the live demo →](https://demo.blux.cc)
+</Callout>
