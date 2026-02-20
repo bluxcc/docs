@@ -1,10 +1,26 @@
 ---
 title: Usage
+description: Learn how to authenticate users, manage profiles, and submit transactions with Blux.
 ---
 
 import { Card, Cards } from 'fumadocs-ui/components/card';
 import { getPageTreePeers } from 'fumadocs-core/page-tree';
 import { source } from '@/lib/source';
+
+Blux provides ready-made UI flows for the most common wallet interactions. All of them are accessible through the `useBlux` hook and require no additional setup beyond the `BluxProvider`.
+
+## Quick Example
+```tsx
+import { useBlux } from "@bluxcc/react";
+
+function App() {
+  const { login, logout, sendTransaction, isAuthenticated, user } = useBlux();
+}
+```
+
+All actions are co-located on the `useBlux` hook, so you only ever need a single import to access the full Blux feature set.
+
+---
 
 <Cards>
   {getPageTreePeers(source.getPageTree(), '/react/usage').map((peer) => (

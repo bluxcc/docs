@@ -1,50 +1,50 @@
 ---
 title: Login
+description: Authenticate users in your app with Blux's built-in login modal.
 ---
 
-Blux supports easy onboarding with an out-of-the-box user interface to log users in.
+import { Callout } from 'fumadocs-ui/components/callout';
 
-To have users login to your app, use the `login` method from the useBlux hook.
+Blux provides an out-of-the-box login modal so you can onboard users without building your own auth UI. Call `login()` from the `useBlux` hook to trigger it.
 
-The `useBlux` hook provides four key fields to manage user authentication:
+## Import
+```tsx
+import { useBlux } from "@bluxcc/react";
+```
 
-    - `isReady` Indicates whether Blux has finished checking for available wallets.
-        - Initially `false`.
-        - Becomes `true` once the wallet check is complete.
-    - `isAuthenticated` Tracks the user’s login state.
-        - `false` by default.
-        - Becomes `true` after a successful login.
-        - Returns to `false` on logout.
-    - `user` Contains user information after login.
-        - Initially `null`.
-        - After login, becomes an object with details like wallet address and connection method.
-        - Resets to `null` on logout.
-    - `login()` Triggers a modal that lets the user choose from available wallets to log in.
-    - `logout()` 
-        - To sign the user out.
-        - Resets `isAuthenticated` to `false`. 
-        - Resets `user` back to `null`.
-
-:::tip
-
-Tip: Keep the Connect button disabled until isReady is set to true.
-
-:::
-
-
+## Usage
 ```tsx
 import { useBlux } from '@bluxcc/react';
 
 function LoginButton() {
-    const { login, isReady, isAuthenticated } = useBlux();
+  const { login, isReady, isAuthenticated } = useBlux();
 
-    const disableLogin = !isReady || (isReady && isAuthenticated);
+  const disableLogin = !isReady || (isReady && isAuthenticated);
 
-    return (
-        <button disabled={disableLogin} onClick={login}>
-            Log in
-        </button>
-    );
+  return (
+    <button disabled={disableLogin} onClick={login}>
+      Log in
+    </button>
+  );
 }
 ```
 
+<Callout type="info">
+  Keep the login button disabled until `isReady` is `true` to avoid triggering the modal before Blux has finished detecting available wallets.
+</Callout>
+
+## Key Fields
+
+The `useBlux` hook provides these fields for managing authentication state:
+
+| Field | Type | Description |
+|---|---|---|
+| `isReady` | `boolean` | `false` until Blux has finished checking for available wallets, then `true` |
+| `isAuthenticated` | `boolean` | `true` after a successful login, resets to `false` on logout |
+| `user` | `object \| null` | User info (address, connection method) after login; `null` otherwise |
+| `login` | `() => void` | Opens the wallet selection modal |
+| `logout` | `() => void` | Signs the user out, resetting `isAuthenticated` and `user` |
+
+## Screenshots
+
+![Login modal](/img/Login.png)

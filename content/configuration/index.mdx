@@ -11,6 +11,8 @@ Blux is designed to be flexible. Every aspect of the integration — from which 
 
 All configuration is passed to `createConfig` (Vanilla JS) or `BluxProvider` (React) at initialization. Every option below is optional unless stated otherwise.
 
+---
+
 <Cards>
   {getPageTreePeers(source.getPageTree(), '/configuration').map((peer) => (
     <Card key={peer.url} title={peer.name} href={peer.url}>

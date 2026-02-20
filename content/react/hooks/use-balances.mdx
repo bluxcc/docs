@@ -17,7 +17,7 @@ import { useBalances } from "@bluxcc/react";
 
 Called with no arguments:
 
-<Tabs items={['index.tsx', 'config.ts']}>
+<Tabs items={['index.tsx', 'config.ts']} defaultIndex={0}>
 <Tab value="index.tsx">
 ```tsx
 import { useBalances } from "@bluxcc/react";
@@ -45,7 +45,7 @@ root.render(
 
 Combine with `useBlux` to fetch balances only when the user is authenticated:
 
-<Tabs items={['index.tsx', 'config.ts']}>
+<Tabs items={['index.tsx', 'config.ts']} defaultIndex={0}>
 <Tab value="index.tsx">
 ```tsx
 import { useBalances, useBlux } from "@bluxcc/react";
@@ -77,14 +77,14 @@ root.render(
 
 With filters and TanStack Query options:
 
-<Tabs items={['index.tsx', 'config.ts']}>
+<Tabs items={['index.tsx', 'config.ts']} defaultIndex={0}>
 <Tab value="index.tsx">
 ```tsx
 import { useBalances } from "@bluxcc/react";
 
 function App() {
   const { data, isStale } = useBalances(
-    { address: "GABKXJRUZ6CPZB3SBTJ3CYRBXA3Q4VJ6V6VQWQPYXQORH5R3DM6S2N7M", includeZeroBalances: false },
+    { address: "GABK....2N7M", includeZeroBalances: false },
     { retry: 2, staleTime: 60000 }
   );
 }

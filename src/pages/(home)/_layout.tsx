@@ -5,7 +5,7 @@ import { baseOptions } from '@/lib/layout.shared';
 
 export default function Layout({ children }: { children: ReactNode }) {
   return (
-    <DocsLayout {...baseOptions()} tree={source.getPageTree()}>
+    <DocsLayout {...baseOptions()} tree={source.getPageTree()} sidebar={{className: 'w-auto'}}>
       {children}
     </DocsLayout>
   );

@@ -1,19 +1,22 @@
 ---
 title: useSwitchNetwork
+description: Change the active network in your React app using the Blux SDK.
 ---
 
-The `useSwitchNetwork` hook is used to change the current active network.
+import { Callout } from 'fumadocs-ui/components/callout';
 
-:::tip
+The `useSwitchNetwork` hook returns a `switchNetwork` function for changing the currently active network.
 
-Switching the active network will impact components like the profile modal and hooks such
-as `useBalance`, `useAccount`, `useTransactions`, and others if the network parameter
-is not explicitly provided to these hooks.
+<Callout type="info">
+  Switching the active network affects components like the profile modal and hooks such as `useBalance`, `useAccount`, and `useTransactions` when no explicit `network` parameter is provided to them.
+</Callout>
 
-:::
+## Import
+```tsx
+import { networks, useSwitchNetwork } from "@bluxcc/react";
+```
 
-### Usage
-
+## Usage
 ```tsx
 import { networks, useSwitchNetwork } from "@bluxcc/react";
 
@@ -31,3 +34,10 @@ const Comp = () => {
   );
 };
 ```
+
+## Return Type
+
+### `switchNetwork`
+`(network: string) => void`
+
+Call with a network value from the `networks` object to update the active network across your app.

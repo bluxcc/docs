@@ -1,6 +1,37 @@
 ---
 title: Sign Message
+description: Request a signed message from the user's wallet using the Blux SDK.
 ---
 
-To have users login to your app, use the login method from the useBlux hook.
+import { Callout } from 'fumadocs-ui/components/callout';
 
+Use `signMessage` from the `useBlux` hook to request a message signature from the connected user's wallet. This is useful for verifying ownership of an account without submitting a transaction.
+
+## Import
+```tsx
+import { useBlux } from "@bluxcc/react";
+```
+
+## Usage
+```tsx
+import { useBlux } from "@bluxcc/react";
+
+function SignButton() {
+  const { signMessage } = useBlux();
+
+  const handleSign = async () => {
+    try {
+      const signature = await signMessage("Hello from Blux!");
+      console.log("Signature:", signature);
+    } catch (error) {
+      console.error("Signing failed:", error);
+    }
+  };
+
+  return <button onClick={handleSign}>Sign Message</button>;
+}
+```
+
+## Screenshots
+
+![Sign Message modal](/img/SignMessage.png)

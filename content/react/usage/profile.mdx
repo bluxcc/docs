@@ -1,7 +1,32 @@
 ---
 title: Profile
+description: Display and manage the connected user's profile using the Blux SDK.
 ---
 
+import { Callout } from 'fumadocs-ui/components/callout';
 
-To have users login to your app, use the login method from the useBlux hook.
+Blux provides a built-in profile modal that displays account information for the connected user. Open it by calling `profile()` from the `useBlux` hook.
 
+## Import
+```tsx
+import { useBlux } from "@bluxcc/react";
+```
+
+## Usage
+```tsx
+import { useBlux } from "@bluxcc/react";
+
+function ProfileButton() {
+  const { profile, isAuthenticated } = useBlux();
+
+  return (
+    <button disabled={!isAuthenticated} onClick={profile}>
+      View Profile
+    </button>
+  );
+}
+```
+
+## Screenshots
+
+![Profile modal](/img/Profile.png)

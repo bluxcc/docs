@@ -11,6 +11,23 @@ body {
 :root {
   --font-sans: "Manrope", sans-serif;
   --font-mono: 'JetBrains Mono', monospace;
+
+    --color-fd-background: hsl(0, 0%, 98%);
+  --color-fd-foreground: hsl(234, 85%, 6%);       /* #04062F */
+  --color-fd-muted: hsl(234, 20%, 96%);
+  --color-fd-muted-foreground: hsl(234, 15%, 45%);
+  --color-fd-popover: hsl(0, 0%, 100%);
+  --color-fd-popover-foreground: hsl(234, 85%, 6%);
+  --color-fd-card: hsl(234, 20%, 97%);
+  --color-fd-card-foreground: hsl(234, 85%, 6%);
+  --color-fd-border: hsla(234, 30%, 80%, 50%);
+  --color-fd-primary: hsl(234, 84%, 31%);          /* #0D1292 */
+  --color-fd-primary-foreground: hsl(0, 0%, 98%);
+  --color-fd-secondary: hsl(234, 40%, 93%);        /* close to #CDCEEE */
+  --color-fd-secondary-foreground: hsl(234, 84%, 31%);
+  --color-fd-accent: hsla(234, 50%, 85%, 50%);     /* light purple tint */
+  --color-fd-accent-foreground: hsl(234, 84%, 31%);
+  --color-fd-ring: hsl(234, 84%, 31%);
 }
 
 .logo-dark {
@@ -21,6 +38,32 @@ body {
   display: none;
 }
 
+.logo-light{
+  margin-bottom: 10px;
+}
+
 .dark .logo-dark {
   display: block;
+  margin-bottom: 10px;
+}
+
+
+.dark {
+  /* Dark theme — true black base matching darkBg/darkGray */
+  --color-fd-background: hsl(0, 0%, 7%);           /* #121212 */
+  --color-fd-foreground: hsl(234, 20%, 92%);
+  --color-fd-muted: hsl(0, 0%, 9.4%);              /* #181818 */
+  --color-fd-muted-foreground: hsla(234, 10%, 70%, 0.8);
+  --color-fd-popover: hsl(0, 0%, 7.5%);            /* close to #0F0F0F */
+  --color-fd-popover-foreground: hsl(234, 20%, 88%);
+  --color-fd-card: hsl(0, 0%, 9%);                 /* #1A1A1A */
+  --color-fd-card-foreground: hsl(0, 0%, 98%);
+  --color-fd-border: hsla(0, 0%, 30%, 25%);        /* #333333 tinted */
+  --color-fd-primary: hsl(234, 70%, 72%);          /* lighter navy for dark bg */
+  --color-fd-primary-foreground: hsl(234, 85%, 6%);
+  --color-fd-secondary: hsl(234, 20%, 14%);
+  --color-fd-secondary-foreground: hsl(234, 20%, 90%);
+  --color-fd-accent: hsla(234, 40%, 60%, 20%);
+  --color-fd-accent-foreground: hsl(234, 20%, 90%);
+  --color-fd-ring: hsl(234, 60%, 60%);
 }

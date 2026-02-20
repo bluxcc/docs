@@ -1,33 +1,24 @@
 ---
 title: useTransactions
+description: Fetch a paginated list of Stellar transactions in your React app using the Blux SDK.
 ---
 
-To get transactions, call `useTransactions`
+import { Tab, Tabs } from 'fumadocs-ui/components/tabs';
+import { Callout } from 'fumadocs-ui/components/callout';
+
+The `useTransactions` hook returns a paginated list of Stellar transactions. All parameters are optional — called with no arguments it returns the latest transactions from the network.
 
 ## Import
-
 ```tsx
 import { useTransactions } from "@bluxcc/react";
 ```
 
 ## Usage
 
-import Tabs from "@theme/Tabs";
-import TabItem from "@theme/TabItem";
+Called with no arguments:
 
-The `useTransactions‍` hook can be called without any parameters. In this case, it simply returns the latest transactions from the network.
-
-<Tabs
-defaultValue="index"
-values={[
-{ label: "index.tsx", value: "index" },
-{ label: "config.ts", value: "config" },
-]}
-
->
-
-<TabItem value="index">
-
+<Tabs items={['index.tsx', 'config.ts']} defaultIndex={0}>
+<Tab value="index.tsx">
 ```tsx
 import { useTransactions } from "@bluxcc/react";
 
@@ -35,11 +26,8 @@ function App() {
   const { data } = useTransactions();
 }
 ```
-
-</TabItem>
-
-<TabItem value="config">
-
+</Tab>
+<Tab value="config.ts">
 ```tsx
 root.render(
   <BluxProvider
@@ -52,27 +40,15 @@ root.render(
   </BluxProvider>
 );
 ```
-
-</TabItem>
-
+</Tab>
 </Tabs>
 
-you can pass the authenticated user’s address directly into `useTransactions`. This allows you to automatically fetch transactions only when the user is logged in.
+Combine with `useBlux` to fetch transactions only when the user is authenticated:
 
-<Tabs
-defaultValue="index"
-values={[
-{ label: "index.tsx", value: "index" },
-{ label: "config.ts", value: "config" },
-]}
-
->
-
-<TabItem value="index">
-
+<Tabs items={['index.tsx', 'config.ts']} defaultIndex={0}>
+<Tab value="index.tsx">
 ```tsx
-import { useTransactions } from "@bluxcc/react";
-import { useBlux } from "@bluxcc/react";
+import { useTransactions, useBlux } from "@bluxcc/react";
 
 function App() {
   const { user, isAuthenticated } = useBlux();
@@ -82,11 +58,8 @@ function App() {
   );
 }
 ```
-
-</TabItem>
-
-<TabItem value="config">
-
+</Tab>
+<Tab value="config.ts">
 ```tsx
 root.render(
   <BluxProvider
@@ -99,41 +72,25 @@ root.render(
   </BluxProvider>
 );
 ```
-
-</TabItem>
-
+</Tab>
 </Tabs>
 
-you can also pass TanStack Query parameters and return types to further customize the hook’s behavior.
+With filters and TanStack Query options:
 
-Note: Always pass core parameters first, then TanStack Query options. The hook relies on this order to work correctly.
-
-<Tabs
-defaultValue="index"
-values={[
-{ label: "index.tsx", value: "index" },
-{ label: "config.ts", value: "config" },
-]}
-
->
-
-<TabItem value="index">
-
+<Tabs items={['index.tsx', 'config.ts']} defaultIndex={0}>
+<Tab value="index.tsx">
 ```tsx
 import { useTransactions } from "@bluxcc/react";
 
 function App() {
   const { data, isStale } = useTransactions(
-    { forLedger: 60221517 }, // Core parameters
-    { retry: 2, staleTime: 60000 }, // TanStack Parameters
+    { forLedger: 60221517 },
+    { retry: 2, staleTime: 60000 }
   );
 }
 ```
-
-</TabItem>
-
-<TabItem value="config">
-
+</Tab>
+<Tab value="config.ts">
 ```tsx
 root.render(
   <BluxProvider
@@ -146,403 +103,123 @@ root.render(
   </BluxProvider>
 );
 ```
-
-</TabItem>
-
+</Tab>
 </Tabs>
+
+<Callout type="info">
+  Always pass core parameters first, then TanStack Query options. The hook relies on this order to work correctly.
+</Callout>
 
 ## Parameters
 
-### forAccount
-
-‍‍‍‍‍‍`string | undefined`
-
-Account ID to fetch transactions for.
-
-```tsx
-import { useTransactions } from "@bluxcc/react"
-
-function App() {
-  const result = useTransactions({
-    forAccount: "GABKXJRUZ6CPZB3SBTJ3CYRBXA3Q4VJ6V6VQWQPYXQORH5R3DM6S2N7M"
-  })
-}
-```
-
-### forClaimableBalance
-
-‍`string | undefined`
-
-Claimable balance ID to fetch transactions for.
-
-```tsx
-import { useTransactions } from "@bluxcc/react"
-
-function App() {
-  const result = useTransactions({
-    forClaimableBalance: "00000000A3F5C1E9B47D92FA6C3E18D4A9B2F0C7D1E4A6B8C3F9D27AB4C8F2D"
-  })
-}
-```
-
-### forLedger
-
-‍‍`number | string | undefined`
-
-Ledger sequence (number) to fetch transactions for.
-
-```tsx
-import { useTransactions } from "@bluxcc/react"
-
-function App() {
-  const result = useTransactions({
-    forLedger: 60221517
-  })
-}
-```
-
-### forLiquidityPool
-
+### `forAccount`
 `string | undefined`
 
-‍Liquidity pool ID to fetch transactions for.
+Fetch transactions for a specific Stellar account ID.
 
-```tsx
-import { useTransactions } from "@bluxcc/react"
+### `forClaimableBalance`
+`string | undefined`
 
-function App() {
-  const result = useTransactions({
-    forLiquidityPool: "ffff7fe3743b3c63b12e80f22aed5e8799aa986e25fe155a19277b660d547e71"
-  })
-}
-```
-### includeFailed
+Fetch transactions related to a specific claimable balance ID.
 
-‍`boolean | undefined`
+### `forLedger`
+`number | string | undefined`
 
-Whether to include failed transactions in the results.
+Fetch transactions included in a specific ledger sequence.
 
-```tsx
-import { useTransactions } from "@bluxcc/react"
+### `forLiquidityPool`
+`string | undefined`
 
-function App() {
-  const result = useTransactions({
-    includeFailed: true
-  })
-}
-```
+Fetch transactions related to a specific liquidity pool ID.
 
-## query
-
-The hook accepts TanStack Query parameters to customize how the query runs.
-
-<h3 data-no-toc>enabled</h3>
-
+### `includeFailed`
 `boolean | undefined`
 
-    - Set this to `false` to disable this query from automatically running
-    - Can be used for [Dependent Queries](https://tanstack.com/query/v5/docs/react/guides/dependent-queries).
+When `true`, includes failed transactions in the results.
 
-<h3 data-no-toc>gcTime</h3>
+### `cursor`
+`string | undefined`
 
-`number | Infinity | undefined`
+Pagination cursor for fetching the next or previous page.
 
-    - Defaults to `5 * 60 * 1000` (5 minutes) or `Infinity` during SSR
-    - The time in milliseconds that unused/inactive cache data remains in memory. When a query's cache becomes unused or inactive, that cache data will be garbage collected after this duration. When different garbage collection times are specified, the longest one will be used.
-    - If set to `Infinity`, will disable garbage collection
+### `limit`
+`number | undefined`
 
-<h3 data-no-toc>initialData</h3>
+Number of records to return per page.
 
-`GetTransactionsResult | (() => GetTransactionsResult) | undefined`
+### `network`
+`string | undefined`
 
-    - If set, this value will be used as the initial data for the query cache (as long as the query hasn't been created or cached yet)
-    - If set to a function, the function will be called once during the shared/root query initialization, and be expected to synchronously return the initialData
-    - Initial data is considered stale by default unless a `staleTime` has been set. 
-    - `initialData` is **persisted** to the cache
+The network to query. Omit to use the active network.
 
-<h3 data-no-toc>initialDataUpdatedAt</h3>
+### `order`
+`'asc' | 'desc' | undefined`
 
-`number | (() => number | undefined) | undefined`
+Sort order for the results.
 
-If set, this value will be used as the time (in milliseconds) of when the initialData itself was last updated.
+## Query Options
 
-<h3 data-no-toc>meta</h3>
-
-`Record<string, unknown> | undefined`
-
-If set, stores additional information on the query cache entry that can be used as needed. It will be accessible wherever the `query` is available, and is also part of the `QueryFunctionContext` provided to the `queryFn`.
-
-<h3 data-no-toc>networkMode</h3>
-
-`online' | 'always' | 'offlineFirst' | undefined`
-
-    - Defaults to `'online'`
-    - See [Network Mode](https://tanstack.com/query/v5/docs/react/guides/dependent-queries) for more information.
-
-<h3 data-no-toc>notifyOnChangeProps</h3>
-
-`string[] | 'all' | (() => string[] | 'all') | undefined`
-
-    - If set, the component will only re-render if any of the listed properties change.
-    - If set to `['data', 'error']` for example, the component will only re-render when the `data` or `error` properties change.
-    - If set to `'all'`, the component will opt-out of smart tracking and re-render whenever a query is updated.
-    - If set to a function, the function will be executed to compute the list of properties.
-    - By default, access to properties will be tracked, and the component will only re-render when one of the tracked properties change.
-
-<h3 data-no-toc>placeholderData</h3>
-
-`GetTransactionsResult | ((previousValue: GetTransactionsResult | undefined; 
-previousQuery: Query | undefined) => GetTransactionsResult) | undefined`
-
-    - If set, this value will be used as the placeholder data for this particular query observer while the query is still in the `pending` state.
-    - `placeholderData` is not **persisted** to the cache
-    - If you provide a function for `placeholderData`, as a first argument you will receive previously watched query data if available, and the second argument will be the complete previousQuery instance.
-
-<h3 data-no-toc>queryClient</h3>
-
-`QueryClient | undefined`
-
-Use this to use a custom `QueryClient`. Otherwise, the one from the nearest context will be used.
-
-<h3 data-no-toc>refetchInterval</h3>
-
-`number | false | ((data: GetTransactionsResult | undefined, query: Query) => number | false | undefined) | undefined`
-
-    - If set to a number, all queries will continuously refetch at this frequency in milliseconds
-    - If set to a function, the function will be executed with the latest data and query to compute a frequency
-
-<h3 data-no-toc>refetchIntervalInBackground</h3>
-
-`boolean | undefined`
-
-If set to `true`, queries that are set to continuously refetch with a `refetchInterval` will continue to refetch while their tab/window is in the background
-
-<h3 data-no-toc>refetchOnMount</h3>
-
-`boolean | 'always' | ((query: Query) => boolean | 'always') | undefined`
-
-    - Defaults to `true`
-    - If set to `true`, the query will refetch on mount if the data is stale.
-    - If set to `false`, the query will not refetch on mount.
-    - If set to `'always'`, the query will always refetch on mount.
-    - If set to a function, the function will be executed with the query to compute the value
-
-<h3 data-no-toc>refetchOnReconnect</h3>
-
-`boolean | 'always' | ((query: Query) => boolean | 'always') | undefined`
-
-    - Defaults to `true`
-    - If set to `true`, the query will refetch on reconnect if the data is stale.
-    - If set to `false`, the query will not refetch on reconnect.
-    - If set to `'always'`, the query will always refetch on reconnect.
-    - If set to a function, the function will be executed with the query to compute the value
-
-<h3 data-no-toc>refetchOnWindowFocus</h3>
-
-`boolean | 'always' | ((query: Query) => boolean | 'always') | undefined`
-
-    - Defaults to `true`
-    - If set to `true`, the query will refetch on window focus if the data is stale.
-    - If set to `false`, the query will not refetch on window focus.
-    - If set to `'always'`, the query will always refetch on window focus.
-    - If set to a function, the function will be executed with the query to compute the value
-
-<h3 data-no-toc>retry</h3>
-
-`boolean | number | ((failureCount: number, error: Error) => boolean) | undefined`
-
-    - If `false`, failed queries will not retry by default.
-    - If `true`, failed queries will retry infinitely.
-    - If set to a `number`, e.g. `3`, failed queries will retry until the failed query count meets that number.
-    - Defaults to `3` on the client and `0` on the server
-
-<h3 data-no-toc>retryDelay</h3>
-
-`number | ((retryAttempt: number, error: Error) => number) | undefined`
-
-    - This function receives a `retryAttempt` integer and the actual Error and returns the delay to apply before the next attempt in milliseconds.
-    - A function like `attempt => Math.min(attempt > 1 ? 2 ** attempt * 1000 : 1000, 30 * 1000)` applies exponential backoff.
-    - A function like `attempt => attempt * 1000` applies linear backoff.
-
-<h3 data-no-toc>retryOnMount</h3>
-
-`boolean | undefined`
-
-    - If set to `false`, the query will not be retried on mount if it contains an error. Defaults to `true`.
-
-<h3 data-no-toc>select</h3>
-
-`((data: GetTransactionsResult) => unknown) | undefined`
-
-    - This option can be used to transform or select a part of the data returned by the query function. It affects the returned `data` value, but does not affect what gets stored in the query cache.
-
-<h3 data-no-toc>staleTime</h3>
-
-`number | Infinity | undefined`
-
-    - Defaults to `0`
-    - The time in milliseconds after data is considered stale. This value only applies to the hook it is defined on.
-    - If set to `Infinity`, the data will never be considered stale
-
-<h3 data-no-toc>structuralSharing</h3>
-
-`boolean | (((oldData: GetTransactionsResult | undefined, newData: GetTransactionsResult) => GetTransactionsResult)) | undefined`
-
-    - Defaults to `true`
-    - If set to `false`, structural sharing between query results will be disabled.
-    - If set to a function, the old and new data values will be passed through this function, which should combine them into resolved data for the query. This way, you can retain references from the old data to improve performance even when that data contains non-serializable values.
-
+| Option | Type | Default | Description |
+|---|---|---|---|
+| `enabled` | `boolean` | `true` | Set to `false` to disable automatic fetching |
+| `staleTime` | `number \| Infinity` | `0` | Time in ms before data is considered stale |
+| `gcTime` | `number \| Infinity` | `300000` | Time in ms before inactive cache data is garbage collected |
+| `retry` | `boolean \| number` | `3` | How many times to retry on failure |
+| `retryDelay` | `number \| function` | — | Delay in ms between retry attempts |
+| `refetchInterval` | `number \| false \| function` | — | Continuously refetch at this interval in ms |
+| `refetchOnMount` | `boolean \| 'always'` | `true` | Refetch on component mount if data is stale |
+| `refetchOnWindowFocus` | `boolean \| 'always'` | `true` | Refetch when the window regains focus |
+| `refetchOnReconnect` | `boolean \| 'always'` | `true` | Refetch when network reconnects |
+| `refetchIntervalInBackground` | `boolean` | — | Keep refetching even when tab is in background |
+| `placeholderData` | `GetTransactionsResult \| function` | — | Placeholder data shown while query is pending (not persisted to cache) |
+| `initialData` | `GetTransactionsResult \| function` | — | Initial data for the cache (persisted) |
+| `initialDataUpdatedAt` | `number \| function` | — | Timestamp of when `initialData` was last updated |
+| `select` | `function` | — | Transform or select a subset of the returned data |
+| `notifyOnChangeProps` | `string[] \| 'all'` | — | Limit re-renders to specific property changes |
+| `structuralSharing` | `boolean \| function` | `true` | Retain references from old data for performance |
+| `networkMode` | `'online' \| 'always' \| 'offlineFirst'` | `'online'` | Controls when queries can run relative to network status |
+| `meta` | `Record<string, unknown>` | — | Attach arbitrary metadata to the query cache entry |
+| `queryClient` | `QueryClient` | — | Use a custom QueryClient instead of the nearest context one |
 
 ## Return Type
 
-### data
-
-`GetTransactionsResult‍‍ | undefined`
-
+### `data`
+`GetTransactionsResult | undefined`
 ```tsx
 type GetTransactionsResult = {
-  builder: TransactionCallBuilder;
+  builder: TransactionCallBuilder; // .next() and .prev() for pagination
   response: Horizon.ServerApi.CollectionPage<Horizon.ServerApi.TransactionRecord>;
-}
+};
 ```
 
-    - The last successfully resolved data for the query.
-    - Defaults to `undefined`.
+### Status Booleans
 
-### dataUpdatedAt
+| Property | Type | Description |
+|---|---|---|
+| `isPending` | `boolean` | No cached data and no completed fetch yet |
+| `isSuccess` | `boolean` | Query resolved successfully |
+| `isError` | `boolean` | Query failed |
+| `isLoading` | `boolean` | First fetch in-flight (`isFetching && isPending`) |
+| `isFetching` | `boolean` | Query function is currently executing |
+| `isRefetching` | `boolean` | Background refetch in progress |
+| `isFetched` | `boolean` | Query has been fetched at least once |
+| `isFetchedAfterMount` | `boolean` | Query fetched after component mounted |
+| `isStale` | `boolean` | Cached data is stale or older than `staleTime` |
+| `isPlaceholderData` | `boolean` | Currently showing placeholder data |
+| `isLoadingError` | `boolean` | Failed on the first fetch |
+| `isRefetchError` | `boolean` | Failed during a background refetch |
+| `isPaused` | `boolean` | Query wanted to fetch but was paused |
 
-`number`
+### Other Returns
 
-The timestamp for when the query most recently returned the `status` as `'success'`.
-
-### error
-
-`null | Error`
-
-    - The error object for the query, if an error was thrown.
-    - Defaults to `null`
-
-### errorUpdatedAt
-
-`number`
-
-The timestamp for when the query most recently returned the `status` as `'error'`.
-
-### errorUpdateCount
-
-`number`
-
-The sum of all errors.
-
-### failureCount
-
-`number`
-
-    - The failure count for the query.
-    - Incremented every time the query fails.
-    - Reset to `0` when the query succeeds.
-
-### failureReason
-
-`null | Error`
-
-    - The failure reason for the query retry.
-    - Reset to `null` when the query succeeds.
-
-### fetchStatus
-
-`'fetching' | 'idle' | 'paused'`
-
-    - `fetching` Is `true` whenever the queryFn is executing, which includes initial `pending` as well as background refetches.
-    - `paused` The query wanted to fetch, but has been `paused`.
-    - `idle` The query is not fetching.
-    - See [Network Mode](https://tanstack.com/query/v5/docs/react/guides/dependent-queries) for more information.
-
-### isError / isPending / isSuccess
-
-`boolean`
-
-Boolean variables derived from `status`.
-
-### isFetched
-
-`boolean`
-
-Will be `true` if the query has been fetched.
-
-### isFetchedAfterMount
-
-`boolean`
-
-    - Will be `true` if the query has been fetched after the component mounted.
-    - This property can be used to not show any previously cached data.
-
-### isFetching / isPaused
-
-`boolean`
-
-Boolean variables derived from `fetchStatus`.
-
-### isLoading
-
-`boolean`
-
-    - Is `true` whenever the first fetch for a query is in-flight
-    - Is the same as `isFetching && isPending`
-
-### isLoadingError
-
-`boolean`
-
-Will be `true` if the query failed while fetching for the first time.
-
-### isPlaceholderData
-
-`boolean`
-
-Will be `true` if the data shown is the placeholder data.
-
-### isRefetchError
-
-`boolean`
-
-Will be `true` if the query failed while refetching.
-
-### isRefetching
-
-`boolean`
-
-    - Is `true` whenever a background refetch is in-flight, which does not include initial `'pending'`.
-    - Is the same as `isFetching && !isPending`
-
-### isStale
-
-`boolean`
-
-Will be `true` if the data in the cache is invalidated or if the data is older than the given `staleTime`.
-
-### refetch
-
-`(options: { cancelRefetch?: boolean | undefined; throwOnError?: boolean | undefined }) => Promise<UseQueryResult<GetTransactionsResult, Error>>`
-
-    - A function to manually refetch the query.
-    - `throwOnError`
-        - When set to `true`, an error will be thrown if the query fails.
-        - When set to `false`, an error will be logged if the query fails.
-    - `cancelRefetch`
-        - When set to `true`, a currently running request will be cancelled before a new request is made.
-        - When set to `false`, no refetch will be made if there is already a request running.
-        - Defaults to `true`
-
-### status
-
-`'error' | 'pending' | 'success'`
-
-    - `pending` if there's no cached data and no query attempt was finished yet.
-    - `error` if the query attempt resulted in an error. The corresponding `error` property has the error received from the attempted fetch
-    - `success` if the query has received a response with no errors and is ready to display its data. The corresponding `data `property on the query is the data received from the successful fetch or if the query's `enabled` property is set to `false` and has not been fetched yet `data` is the first `initialData` supplied to the query on initialization.
-
-
-## Action
-
-    - [`getTransaction`](https://docs.blux.cc/js/core/getTransactions)
+| Property | Type | Description |
+|---|---|---|
+| `status` | `'pending' \| 'success' \| 'error'` | Current query status |
+| `fetchStatus` | `'fetching' \| 'idle' \| 'paused'` | Current fetch status |
+| `error` | `null \| Error` | Error object if the query failed |
+| `dataUpdatedAt` | `number` | Timestamp of last successful fetch |
+| `errorUpdatedAt` | `number` | Timestamp of last error |
+| `errorUpdateCount` | `number` | Total number of errors |
+| `failureCount` | `number` | Failures since last success |
+| `failureReason` | `null \| Error` | Reason for last retry failure |
+| `refetch` | `function` | Manually trigger a refetch |

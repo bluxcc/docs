@@ -1,11 +1,17 @@
 ---
 title: Hooks
+description: React hooks for querying Stellar network data and managing wallet state.
 ---
 
 import { Card, Cards } from 'fumadocs-ui/components/card';
 import { getPageTreePeers } from 'fumadocs-core/page-tree';
 import { source } from '@/lib/source';
 
+Blux provides two categories of React hooks: hooks for **managing wallet state** (authentication, network, transactions) and hooks for **querying Stellar network data** (accounts, balances, trades, and more).
+
+All data-fetching hooks are built on [TanStack Query](https://tanstack.com/query/v5) and support the full suite of query options including caching, background refetching, pagination, and dependent queries.
+
+---
 
 <Cards>
   {getPageTreePeers(source.getPageTree(), '/react/hooks').map((peer) => (

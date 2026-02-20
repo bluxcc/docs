@@ -17,7 +17,7 @@ import { useAccount } from "@bluxcc/react";
 
 Called with no arguments, it returns the connected account on the current network:
 
-<Tabs items={['index.tsx', 'config.ts']}>
+<Tabs items={['index.tsx', 'config.ts']} defaultIndex={0}>
 <Tab value="index.tsx">
 ```tsx
 import { useAccount } from "@bluxcc/react";
@@ -45,7 +45,7 @@ root.render(
 
 You can combine it with `useBlux` to fetch account details only when the user is authenticated:
 
-<Tabs items={['index.tsx', 'config.ts']}>
+<Tabs items={['index.tsx', 'config.ts']} defaultIndex={0}>
 <Tab value="index.tsx">
 ```tsx
 import { useAccount, useBlux } from "@bluxcc/react";
@@ -77,7 +77,7 @@ root.render(
 
 You can also pass TanStack Query options as a second argument to customize caching and refetch behavior:
 
-<Tabs items={['index.tsx', 'config.ts']}>
+<Tabs items={['index.tsx', 'config.ts']} defaultIndex={0}>
 <Tab value="index.tsx">
 ```tsx
 import { useAccount, networks } from "@bluxcc/react";

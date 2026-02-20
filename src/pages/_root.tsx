@@ -5,7 +5,10 @@ import '@/styles/globals.css';
 export default async function RootElement({ children }: { children: ReactNode }) {
   return (
     <html lang="en" suppressHydrationWarning>
-      <head></head>
+      <head>
+        <meta name="viewport" content="width=device-width, initial-scale=1" />
+        <link rel="icon" href="/favicon.png" />
+      </head>
       <body data-version="1.0">
         <Provider>{children}</Provider>
       </body>

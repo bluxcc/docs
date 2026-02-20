@@ -1,65 +1,55 @@
 ---
 title: Send Transaction
+description: Submit Stellar transactions from your React app using the Blux SDK.
 ---
 
-To submit transactions using Blux, use the `sendTransaction` function provided by the `useBlux` hook.
+import { Callout } from 'fumadocs-ui/components/callout';
 
-### Type
+Use the `sendTransaction` function from `useBlux` to submit transactions. When called, Blux shows a confirmation modal displaying the transaction details, estimated fee, and submitting account before the user approves.
 
-```typescript
+## Import
+```tsx
+import { useBlux } from "@bluxcc/react";
+```
+
+## Type
+```tsx
 type IOptions = {
   network?: string;
   isSoroban?: boolean;
 };
 
-const sendTransaction: (xdr: string, options?: IOptions);
+const sendTransaction: (xdr: string, options?: IOptions) => Promise<...>;
 ```
 
-- `xdr`:  The base64-encoded XDR string of the transaction.
-- `options (optional)`:
-    - `isSoroban (boolean) (optional)` – Set to true if the transaction is for Soroban smart contracts.
+| Parameter | Type | Description |
+|---|---|---|
+| `xdr` | `string` | Base64-encoded XDR string of the transaction |
+| `options.isSoroban` | `boolean` | Set to `true` for Soroban smart contract transactions |
+| `options.network` | `string` | Network to use; omit to use the active network |
 
-    - `network (string) (optional)` – Optionally specify the network. If omitted, Blux will use the current active network.
-
-
-<Callout title="Title" type="idea">
-
-If `isSoroban` is set to true, `sendTransaction` will return `Promise<rpc.Api.GetSuccessfulTransactionResponse>`.
-Otherwise, it will return `Promise<Horizon.HorizonApi.SubmitTransactionResponse>`.
-
+<Callout type="info">
+  When `isSoroban` is `true`, `sendTransaction` returns `Promise<rpc.Api.GetSuccessfulTransactionResponse>`. Otherwise it returns `Promise<Horizon.HorizonApi.SubmitTransactionResponse>`.
 </Callout>
 
-### Usage
-
-```typescript
+## Usage
+```tsx
 const { sendTransaction } = useBlux();
 
 const sendTx = async () => {
-    try {
-        const options = {
-            isSoroban: true,
-        };
-
-        const result = await sendTransaction(xdr, options);
-
-        console.log('Transaction submitted');
-        console.log(result);
-    } catch (error) {
-        console.error('Something went wrong!');
-        console.log(error);
-    }
-}
+  try {
+    const result = await sendTransaction(xdr, { isSoroban: true });
+    console.log('Transaction submitted', result);
+  } catch (error) {
+    console.error('Something went wrong!', error);
+  }
+};
 ```
 
-When you call sendTransaction, Blux shows a confirmation modal to the user.
-This modal displays the transaction details, the estimated fee,
-and the account that will submit the transaction.
-It gives users a clear overview before they approve the action.
+<Callout type="info">
+  To skip the confirmation modal and build your own flow, set `showWalletUIs: false` in your `BluxProvider` configuration.
+</Callout>
 
-:::tip
+## Screenshots
 
-If you don’t want this confirmation modal to appear, you can disable it by setting 
-`showWalletUIs: false` in the BluxProvider configuration.
-This is useful if you're building your own custom confirmation flow.
-
-:::
+![Send Transaction modal](/img/SendTransaction.png)

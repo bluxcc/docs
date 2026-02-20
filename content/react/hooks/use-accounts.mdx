@@ -17,14 +17,14 @@ import { useAccounts } from "@bluxcc/react";
 
 Filter by asset to fetch all accounts holding a specific token:
 
-<Tabs items={['index.tsx', 'config.ts']}>
+<Tabs items={['index.tsx', 'config.ts']} defaultIndex={0}>
 <Tab value="index.tsx">
 ```tsx
 import { useAccounts, Asset } from "@bluxcc/react";
 
 function App() {
   const { data } = useAccounts({
-    forAsset: new Asset("USDC", "GA5ZSEJYB37JRC5AVCIA5MOP4RHTM335X2KGX3IHOJAPP5RE34K4KZVN")
+    forAsset: new Asset("USDC", "GA5Z...KZVN")
   });
 }
 ```
@@ -47,7 +47,7 @@ root.render(
 
 Combine with `useBlux` to fetch accounts only when the user is authenticated:
 
-<Tabs items={['index.tsx', 'config.ts']}>
+<Tabs items={['index.tsx', 'config.ts']} defaultIndex={0}>
 <Tab value="index.tsx">
 ```tsx
 import { useAccounts, useBlux } from "@bluxcc/react";
@@ -79,14 +79,14 @@ root.render(
 
 Pass TanStack Query options as a second argument to customize caching and refetch behavior:
 
-<Tabs items={['index.tsx', 'config.ts']}>
+<Tabs items={['index.tsx', 'config.ts']} defaultIndex={0}>
 <Tab value="index.tsx">
 ```tsx
 import { useAccounts, Asset } from "@bluxcc/react";
 
 function App() {
   const { data } = useAccounts(
-    { forAsset: new Asset("USDC", "GA5Z...4KZVN") },
+    { forAsset: new Asset("USDC", "GA5Z...KZVN") },
     { retry: 3, staleTime: 60000 }
   );
 }
