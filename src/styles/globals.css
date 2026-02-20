@@ -11,14 +11,13 @@ body {
 :root {
   --font-sans: "Manrope", sans-serif;
   --font-mono: 'JetBrains Mono', monospace;
-
-    --color-fd-background: hsl(0, 0%, 98%);
+  --color-fd-background: hsl(0, 0%, 100%);
   --color-fd-foreground: hsl(234, 85%, 6%);       /* #04062F */
   --color-fd-muted: hsl(234, 20%, 96%);
   --color-fd-muted-foreground: hsl(234, 15%, 45%);
   --color-fd-popover: hsl(0, 0%, 100%);
   --color-fd-popover-foreground: hsl(234, 85%, 6%);
-  --color-fd-card: hsl(234, 20%, 97%);
+  --color-fd-card: hsl(0, 0%, 99%);
   --color-fd-card-foreground: hsl(234, 85%, 6%);
   --color-fd-border: hsla(234, 30%, 80%, 50%);
   --color-fd-primary: hsl(234, 84%, 31%);          /* #0D1292 */
