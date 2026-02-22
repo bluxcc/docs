@@ -1,17 +1,13 @@
 FROM node:18.18-slim
 
-RUN npm install -g pnpm
-
 WORKDIR /app
 
 COPY package.json pnpm-lock.yaml ./
 
-RUN pnpm install --frozen-lockfile
-
 COPY . .
 
-RUN pnpm build
+RUN npm build
 
-EXPOSE 3000
+EXPOSE 8080
 
-CMD ["pnpm", "start"]
+CMD ["npm", "start"]
