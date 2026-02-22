@@ -6,7 +6,7 @@ COPY package.json pnpm-lock.yaml ./
 
 COPY . .
 
-RUN npm build
+RUN npm run build
 
 EXPOSE 8080
 
