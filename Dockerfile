@@ -1,4 +1,4 @@
-FROM node:18.18-slim
+FROM node:24.12.0-slim
 
 COPY package.json pnpm-lock.yaml ./
 
