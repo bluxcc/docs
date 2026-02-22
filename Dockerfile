@@ -4,7 +4,7 @@ COPY package.json pnpm-lock.yaml ./
 
 WORKDIR /app
 
-RUN npm i
+RUN npm i --legacy-peer-deps
 
 COPY . /app
 
