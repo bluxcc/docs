@@ -1,12 +1,11 @@
 FROM node:24.12.0-slim
 
-COPY package.json pnpm-lock.yaml /app
-
+COPY package.json source.config.ts waku.config.ts /app/
 WORKDIR /app
 
-COPY . /app
+RUN npm i --legacy-peer-deps
 
-RUN npm i --force
+COPY . /app
 
 RUN npm run build
 
