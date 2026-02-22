@@ -1,12 +1,11 @@
 FROM node:24.12.0-slim
 
-COPY package.json pnpm-lock.yaml ./
+COPY package.json pnpm-lock.yaml /app
+COPY . /app
 
 WORKDIR /app
 
 RUN npm i --force
-
-COPY . /app
 
 RUN npm run build
 
