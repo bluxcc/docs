@@ -1,0 +1,10 @@
+{
+  "title": "Dashboard",
+  "defaultOpen": true,
+  "pages": [
+    "index",
+    "users",
+    "access-control",
+    "socials"
+  ]
+}

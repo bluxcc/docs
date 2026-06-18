@@ -1,0 +1,67 @@
+---
+title: Sign Transaction
+description: Sign a transaction with the connected wallet without submitting it.
+---
+
+import { Callout } from 'fumadocs-ui/components/callout';
+
+The `blux.signTransaction()` method signs a transaction with the connected wallet but **does not submit it**. It resolves to the signed transaction envelope (a base-64 XDR string).
+
+Use this when you want to submit it yourself, store it, send it to a backend, or pass it to a co-signer for multi-signature. If you want Blux to sign **and** submit in one step, use [`sendTransaction`](/javascript/usage/send-transaction) instead.
+
+| Method | Signs? | Submits to network? | Returns |
+|---|---|---|---|
+| `blux.sendTransaction(xdr, options?)` | ✅ | ✅ | `Promise<ISubmittedTransaction>` |
+| `blux.signTransaction(xdr, options?)` | ✅ | ❌ | `Promise<string>` (signed XDR) |
+
+## Type
+```typescript
+type IOptions = {
+  // Network passphrase to sign against. Defaults to the active network.
+  // Use the `networks` map, e.g. networks.testnet / networks.mainnet.
+  network?: string;
+};
+
+const signTransaction: (
+  xdr: string,
+  options?: IOptions,
+) => Promise<string>; // the signed XDR
+```
+
+| Parameter | Type | Description |
+|---|---|---|
+| `xdr` | `string` | Base64-encoded XDR string of the transaction |
+| `options.network` | `string` | Network to sign against — omit to use the active network |
+
+## Usage — sign now, submit later
+```typescript
+import { blux, networks, StellarSdk } from "@bluxcc/core";
+
+// Sign WITHOUT submitting.
+const signedXdr: string = await blux.signTransaction(unsignedXdr, {
+  network: networks.testnet,
+});
+
+// `signedXdr` is the signed envelope — it has NOT been sent to the network.
+// Submit it yourself whenever you want, e.g. via the Stellar SDK:
+const horizon = new StellarSdk.Horizon.Server("https://horizon-testnet.stellar.org");
+const tx = StellarSdk.TransactionBuilder.fromXDR(signedXdr, networks.testnet);
+const response = await horizon.submitTransaction(tx);
+
+console.log(response.hash);
+```
+
+## Errors
+
+`signTransaction` rejects with `BLUX:`-prefixed messages:
+
+| Message | Cause |
+|---|---|
+| `BLUX: User is not authenticated.` | No user is logged in. |
+| `BLUX: Blux modal is open elsewhere.` | Another Blux flow is already open. |
+| `BLUX: Invalid XDR` | The XDR can't be parsed for the given network. |
+| `BLUX: Could not find the connected wallet.` | The connected wallet couldn't be resolved. |
+
+<Callout type="info">
+  To skip the confirmation modal and handle your own confirmation UI, set `showWalletUIs: false` in `createConfig`. The signed XDR returned is identical either way.
+</Callout>

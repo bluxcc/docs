@@ -1,0 +1,29 @@
+---
+title: Socials
+description: Enable social login providers (Google, Meta, GitHub, and more) for your app.
+---
+
+import { Callout } from 'fumadocs-ui/components/callout';
+
+Blux can let your users sign in with their existing social accounts — **Google**, **Meta**, **GitHub**, **Twitter (X)**, **Discord**, and **Apple**. Social providers are configured per-app from the dashboard.
+
+## How it works
+
+Social login is a **two-step** setup:
+
+1. **Enable the provider in the dashboard.** In your app's settings, turn on each social provider you want to offer. This ties the provider to your `appId`.
+2. **Add it to `loginMethods`.** In your app config, list the provider keys so they appear in the login modal.
+
+```ts
+createConfig({
+  appName: "MyApp",
+  appId: "your-app-id",
+  loginMethods: ["google", "meta", "github", "email"],
+});
+```
+
+<Callout type="warn">
+  A provider only shows up in the modal if it's **both** enabled in the dashboard for your `appId` **and** present in `loginMethods`. If you add `"google"` to `loginMethods` but haven't enabled Google in the dashboard, it won't appear.
+</Callout>
+
+See [Login Methods](/configuration/login-methods) for the full list of provider keys and client-side configuration.

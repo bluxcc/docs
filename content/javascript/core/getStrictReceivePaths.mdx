@@ -28,10 +28,13 @@ type GetPaymentPathResult = {
 ```typescript
 import { core } from "@bluxcc/core";
 
+// args: [
+//   source: string | Asset[],
+//   destinationAsset: Asset,
+//   destinationAmount: string,
+// ]
 const result = await core.getStrictReceivePaths(
-  [
-    source: string | Asset[],
-    destinationAsset: Asset,
-    destinationAmount: string,
-  ], options);
+  [source, destinationAsset, destinationAmount],
+  options,
+);
 ```

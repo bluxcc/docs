@@ -1,0 +1,267 @@
+---
+title: Transfer
+description: Send XLM, issued assets, or SEP-41 tokens to any recipient — Blux picks the right operation for you.
+---
+
+import { Callout } from 'fumadocs-ui/components/callout';
+
+`transfer` is the high-level "send value" helper. You describe **what** you want — _send this amount of this asset to this recipient_ — and Blux figures out the **how**, building and submitting the correct transaction through its signing flow.
+
+It covers two worlds from a single function:
+
+- **Stellar (classic) transfers** — XLM and issued assets. Blux inspects the recipient and automatically chooses a `payment`, a `createAccount`, or a `createClaimableBalance` so the transfer doesn't fail on edge cases (a brand-new account, a missing trustline, …).
+- **Soroban (SEP-41 token) transfers** — set `token` to a contract id and value moves through the token contract's `transfer(from, to, amount)` entrypoint instead.
+
+The connected account is always the sender, and the call resolves to the same [`ISubmittedTransaction`](/javascript/usage/send-transaction#return-value) envelope returned by [`sendTransaction`](/javascript/usage/send-transaction) and [`writeContract`](/javascript/core/writeContract).
+
+<Callout type="info">
+  `transfer` must be called after `createConfig` and while a user is connected — the connected account is the source. Like `sendTransaction`, it shows the Blux confirmation modal before signing (unless you set `showWalletUIs: false` in `createConfig`). Wrap the call in `try/catch` to handle validation errors and user rejection.
+</Callout>
+
+## Type
+```ts
+import { Asset } from "@stellar/stellar-sdk";
+
+type Numberish = string | number | bigint;
+
+type TransferOptions = {
+  // Recipient: a Stellar address (G... or muxed M...) or a SEP-2 federated
+  // address ("alice*example.com"). For a `token` transfer a contract id (C...)
+  // is also accepted.
+  to: string;
+
+  // Amount to send (must be > 0). Numbers and bigints are coerced to a string.
+  // Classic assets use a decimal amount ("10.5"); a `token` uses the integer
+  // base-unit amount the contract expects.
+  amount: Numberish;
+
+  // Classic asset to send. Defaults to the native lumen. Accepts
+  // 'xlm' | 'native' | 'CODE:ISSUER' | an Asset instance. Ignored when `token` is set.
+  asset?: string | Asset;
+
+  // Optional text memo. Ignored for `token` (Soroban) transfers.
+  memo?: string;
+
+  // When the recipient can't receive the asset directly (its account does not
+  // exist, or it has no trustline for an issued asset), send a claimable balance
+  // it can claim later instead of failing. Defaults to false.
+  claimable?: boolean;
+
+  // A SEP-41 token contract id (C...). When set, value moves through the
+  // contract's transfer(from, to, amount) entrypoint instead of a classic op.
+  token?: string;
+
+  // Network passphrase to send on. Defaults to the active network.
+  network?: string;
+};
+
+const transfer: (options: TransferOptions) => Promise<ISubmittedTransaction>;
+```
+
+| Parameter | Type | Default | Description |
+|---|---|---|---|
+| `to` | `string` | — | **Required.** Recipient. A Stellar address (`G…` or muxed `M…`) or a SEP-2 federated address (`alice*example.com`). For a `token` transfer a contract id (`C…`) is also accepted. |
+| `amount` | `string \| number \| bigint` | — | **Required.** Must be greater than zero. Decimal units for a classic asset (`"10.5"`); integer base units for a `token`. |
+| `asset` | `string \| Asset` | `"native"` | Classic asset: `"xlm"`/`"native"`, `"CODE:ISSUER"`, or an `Asset` instance. Ignored when `token` is set. |
+| `memo` | `string` | — | Optional text memo. Ignored for `token` transfers. |
+| `claimable` | `boolean` | `false` | Fall back to a claimable balance when the recipient can't receive directly (see below). |
+| `token` | `string` | — | SEP-41 token contract id (`C…`). Switches the call to the Soroban token path. |
+| `network` | `string` | active network | Network passphrase to send on — use the `networks` map (e.g. `networks.testnet`). |
+
+## How the classic operation is chosen
+
+For classic assets you never pick the operation yourself — `transfer` reads the recipient's on-chain state and selects the one the network will accept:
+
+| Recipient state | `claimable` | Operation used |
+|---|---|---|
+| Exists & trusts the asset (native always qualifies) | any | `payment` |
+| Exists, but has **no trustline** for the issued asset | `true` | `createClaimableBalance` |
+| Exists, but has **no trustline** for the issued asset | `false` | ❌ throws — pass `claimable: true` |
+| **Doesn't exist yet**, sending **XLM** | `false` | `createAccount` (funds the new account) |
+| **Doesn't exist yet**, sending an issued asset | `false` | ❌ throws — send XLM, or pass `claimable: true` |
+| **Doesn't exist yet** | `true` | `createClaimableBalance` |
+
+<Callout type="info">
+  A new account can only be **created** with XLM, so sending an issued asset to an address that doesn't exist yet is rejected unless you opt into `claimable: true` — the recipient then claims it once they create their account and add the trustline.
+</Callout>
+
+## Usage — Stellar (classic) transfers
+
+### Send XLM
+
+The simplest case. `asset` defaults to the native lumen:
+
+```ts
+import { core } from "@bluxcc/core";
+
+const result = await core.transfer({
+  to: "GDESTINATION...ADDRESS",
+  amount: "10", // 10 XLM
+});
+
+console.log(result.hash);
+```
+
+If `GDESTINATION...ADDRESS` doesn't exist yet, this automatically becomes a `createAccount` that funds it with the 10 XLM.
+
+### Send an issued asset
+
+Pass the asset in `"CODE:ISSUER"` form:
+
+```ts
+import { core } from "@bluxcc/core";
+
+await core.transfer({
+  to: "GDESTINATION...ADDRESS",
+  amount: "25.5",
+  asset: "USDC:GA5ZSEJYB37JRC5AVCIA5MOP4RHTM335X2KGX3IHOJAPP5RE34K4KZVN",
+});
+```
+
+You can also pass an `Asset` instance instead of a string:
+
+```ts
+import { core, StellarSdk } from "@bluxcc/core";
+
+const usdc = new StellarSdk.Asset(
+  "USDC",
+  "GA5ZSEJYB37JRC5AVCIA5MOP4RHTM335X2KGX3IHOJAPP5RE34K4KZVN",
+);
+
+await core.transfer({ to: "GDESTINATION...ADDRESS", amount: "25.5", asset: usdc });
+```
+
+### Attach a memo
+
+Many exchanges and custodial wallets require a memo to credit your deposit:
+
+```ts
+import { core } from "@bluxcc/core";
+
+await core.transfer({
+  to: "GDESTINATION...ADDRESS",
+  amount: "100",
+  asset: "USDC:GA5ZSEJYB37JRC5AVCIA5MOP4RHTM335X2KGX3IHOJAPP5RE34K4KZVN",
+  memo: "invoice-1234",
+});
+```
+
+### Send to a federated address (SEP-2)
+
+Pass a `name*domain` address and Blux resolves it against the domain's federation server — including any memo the federation record asks senders to attach:
+
+```ts
+import { core } from "@bluxcc/core";
+
+await core.transfer({ to: "alice*example.com", amount: "10" });
+```
+
+### Fall back to a claimable balance
+
+When the recipient's account doesn't exist yet, or it hasn't added a trustline for your issued asset, a direct payment would fail. Pass `claimable: true` to send a [claimable balance](/javascript/core/getClaimableBalances) they can claim on their own schedule:
+
+```ts
+import { core } from "@bluxcc/core";
+
+await core.transfer({
+  to: "GNEW...RECIPIENT",
+  amount: "100",
+  asset: "USDC:GA5ZSEJYB37JRC5AVCIA5MOP4RHTM335X2KGX3IHOJAPP5RE34K4KZVN",
+  claimable: true,
+});
+```
+
+## Usage — Soroban (SEP-41 token) transfers
+
+Set `token` to a SEP-41 token contract id. Blux calls the contract's `transfer(from, to, amount)` entrypoint with the connected account as `from`, simulates it, signs, submits via Soroban RPC, and waits for finalization — exactly like [`writeContract`](/javascript/core/writeContract), but you don't encode any arguments yourself.
+
+```ts
+import { core } from "@bluxcc/core";
+
+const result = await core.transfer({
+  token: "CB64D3G7SM2RTH6JSGG34DDTFTQ5CFDKVDZJZSODMCX4NJ2HV2KN7OG",
+  to: "GRECIPIENT...ADDRESS",
+  amount: "1000000000", // integer base units — see note below
+});
+
+console.log(result.hash);
+console.log(await result.returnValue()); // null — SEP-41 transfer returns void
+```
+
+<Callout type="warn">
+  **Token amounts are integer base units, not decimals.** A token with 7 decimals represents `100` tokens as `100 * 10^7 = "1000000000"`. Passing a decimal (e.g. `"100.5"`) throws. Read the token's `decimals` with [`readContracts`](/javascript/core/readContracts) and scale before calling:
+
+  ```ts
+  const baseUnits = (100n * 10n ** 7n).toString(); // "1000000000"
+  ```
+</Callout>
+
+The recipient can be an account **or another contract** — pass a contract id (`C…`) directly:
+
+```ts
+import { core } from "@bluxcc/core";
+
+await core.transfer({
+  token: "CB64D3G7SM2RTH6JSGG34DDTFTQ5CFDKVDZJZSODMCX4NJ2HV2KN7OG",
+  to: "CRECIPIENT...CONTRACT", // send to a contract
+  amount: "5000000",
+});
+```
+
+`asset`, `memo`, and `claimable` are classic-only and are ignored on the token path. A `G…`/`M…`/federated `to` is resolved down to its base account id before the contract call.
+
+<Callout type="info">
+  Want to bridge a classic asset (XLM or a `CODE:ISSUER` asset) into Soroban as a token? Use the asset's **Stellar Asset Contract (SAC)** id as `token`. See the Stellar **assets** skill for the SAC interop layer.
+</Callout>
+
+## Classic vs. token at a glance
+
+| | Classic (default) | Token (`token` set) |
+|---|---|---|
+| `amount` | decimal units — `"10.5"` | integer base units — `"10500000"` |
+| `asset` | `"native"` / `"CODE:ISSUER"` / `Asset` | ignored |
+| `memo` | supported | ignored |
+| `claimable` | supported | not applicable |
+| Recipient | `G…` / `M…` / federated | `G…` / `M…` / federated / `C…` |
+| Operation | `payment` / `createAccount` / `createClaimableBalance` | SEP-41 `transfer(from, to, amount)` |
+| Settles via | Horizon (immediate) | Soroban RPC (waited until finalized) |
+
+## Return value
+
+`transfer` resolves to an [`ISubmittedTransaction`](/javascript/usage/send-transaction#return-value):
+
+```ts
+interface ISubmittedTransaction {
+  hash: string;                          // the transaction hash
+  returnValue: () => Promise<unknown>;   // null for classic & for SEP-41 transfer (void)
+  raw: SubmitTransactionResponse | GetSuccessfulTransactionResponse;
+}
+```
+
+`result.hash` works for both paths. Classic transfers expose Horizon fields under `result.raw`; token transfers expose the finalized Soroban RPC transaction there.
+
+## Errors
+
+`transfer` rejects with `BLUX:`-prefixed messages so failures are actionable:
+
+| Message | Cause |
+|---|---|
+| `BLUX: transfer must be called after createConfig` | Called before `createConfig` ran. |
+| `BLUX: No account is logged in.` | No connected user to act as the source. |
+| `BLUX: transfer requires a "to" address.` | `to` was missing. |
+| `BLUX: transfer requires an "amount".` | `amount` was missing. |
+| `BLUX: transfer "amount" must be greater than zero.` | `amount` was zero or negative. |
+| `BLUX: "token" must be a contract id (C...).` | `token` wasn't a valid contract id. |
+| `BLUX: token transfers use integer base units; "amount" cannot have decimals.` | A decimal/exponential `amount` on the token path. |
+| `BLUX: "amount" could not be represented precisely; pass it as a string (e.g. "0.0000001").` | A tiny/huge `amount` rendered in exponential form on the classic path — pass it as a string. |
+| `BLUX: The logged-in account is not active on this network yet.` | The source account isn't funded on this network. |
+| `BLUX: The destination has no trustline for <CODE>. Pass { claimable: true } to send it as a claimable balance.` | Recipient exists but doesn't trust the issued asset. |
+| `BLUX: The destination account does not exist, so it can only be created with XLM. Send XLM, or pass { claimable: true } to send <CODE> as a claimable balance.` | Sending an issued asset to an account that doesn't exist yet. |
+| `BLUX: Invalid asset "…". Use "xlm", "native", or "CODE:ISSUER".` | Malformed `asset` string. |
+| `BLUX: Could not resolve federated address "…": …` | Federation lookup for `to` failed. |
+
+Errors raised while signing and submitting (`BLUX: User is not authenticated.`, network busy, on-chain failure, …) propagate unchanged from [`sendTransaction`](/javascript/usage/send-transaction#errors).
+
+<Callout type="info">
+  Need lower-level control — a custom operation, batched operations, or your own fee strategy? Build the transaction yourself and submit it with [`sendTransaction`](/javascript/usage/send-transaction). `transfer` is the convenience layer for the common "send X to Y" case.
+</Callout>

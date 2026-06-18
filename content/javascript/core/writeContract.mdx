@@ -1,0 +1,58 @@
+---
+title: Write Contract
+description: Invoke a Soroban smart contract method that changes on-chain state.
+---
+
+import { Callout } from 'fumadocs-ui/components/callout';
+
+`writeContract` is a **Soroban** helper that invokes a state-changing contract method. It builds the call, simulates it to gather the resource fees, footprint, and authorization, assembles the final transaction, and then submits it through Blux's signing flow — so the connected user signs and the change lands on-chain.
+
+Unlike [`readContracts`](/javascript/core/readContracts), this **requires a connected user** (the source account) and produces a real, fee-paying transaction.
+
+## Type
+```ts
+import { xdr } from "@stellar/stellar-sdk";
+
+type IContractCall = {
+  address: string;     // contract ID (C...)
+  fn: string;          // function name to invoke
+  args: xdr.ScVal[];   // arguments, encoded as ScVal (see ToScVal)
+};
+
+type WriteContractsOptions = {
+  network?: string;    // Omit to use the active network
+};
+
+const writeContract: (
+  call: IContractCall,
+  options?: WriteContractsOptions,
+) => Promise<unknown>; // resolves with the sendTransaction result
+```
+
+## Encoding arguments with `ToScVal`
+
+As with `readContracts`, every argument **must** be encoded with the `ToScVal` class so it matches the Soroban type the contract expects. See the [`ToScVal` reference in Read Contracts](/javascript/core/readContracts#encoding-arguments-with-toscval) for the full list of methods.
+
+## Usage
+
+Call a token's `transfer` method. Blux prompts the user to sign before the transaction is submitted:
+
+```ts
+import { core, ToScVal } from "@bluxcc/core";
+
+const result = await core.writeContract({
+  address: "CB64D3G7SM2RTH6JSGG34DDTFTQ5CFDKVDZJZSODMCX4NJ2HV2KN7OG",
+  fn: "transfer",
+  args: [
+    ToScVal.address("GA...FROM"),   // from
+    ToScVal.address("GB...TO"),     // to
+    ToScVal.i128("1000000000"),     // amount
+  ],
+});
+
+console.log(result);
+```
+
+<Callout type="info">
+  `writeContract` must be called after `createConfig` and while a user is connected — the connected account is used as the transaction source. Wrap the call in a `try/catch` to handle simulation failures and user rejection.
+</Callout>

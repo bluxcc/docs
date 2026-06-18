@@ -1,0 +1,76 @@
+---
+title: Sign Auth Entry
+description: Sign a Soroban authorization entry with the connected wallet using Blux.
+---
+
+import { Callout } from 'fumadocs-ui/components/callout';
+
+The `blux.signAuthEntry()` method asks the connected wallet to sign a single **Soroban authorization entry**. It resolves to the signed entry as a base-64 XDR string.
+
+This is a low-level building block for advanced Soroban flows — multi-party authorization, signing on behalf of a contract account, or assembling `invokeHostFunction` authorization yourself before submitting. For ordinary contract calls you don't need this: [`writeContract`](/javascript/core/writeContract) and [`sendTransaction`](/javascript/usage/send-transaction) handle authorization for you.
+
+## Type
+```typescript
+type IOptions = {
+  // Network passphrase to sign against. Defaults to the active network.
+  // Use the `networks` map, e.g. networks.testnet / networks.mainnet.
+  network: string;
+};
+
+const signAuthEntry: (
+  authEntry: string,
+  options?: IOptions,
+) => Promise<string>; // the signed auth entry (base-64 XDR)
+```
+
+| Parameter | Type | Description |
+|---|---|---|
+| `authEntry` | `string` | Base64-encoded authorization entry (`HashIdPreimage`) to sign |
+| `options.network` | `string` | Network to sign against — omit to use the active network |
+
+## Usage
+```typescript
+import { blux } from "@bluxcc/core";
+
+const signEntry = async (authEntry: string) => {
+  try {
+    const signedAuthEntry = await blux.signAuthEntry(authEntry);
+
+    // `signedAuthEntry` is the signed entry as a base-64 XDR string.
+    // Attach it to your Soroban operation's authorization before submitting.
+    console.log(signedAuthEntry);
+  } catch (error) {
+    console.error("Something went wrong!");
+    console.log(error);
+  }
+};
+```
+
+Sign against a specific network:
+
+```typescript
+import { blux, networks } from "@bluxcc/core";
+
+const signedAuthEntry = await blux.signAuthEntry(authEntry, {
+  network: networks.testnet,
+});
+```
+
+## Errors
+
+`signAuthEntry` rejects (or throws) with `BLUX:`-prefixed messages:
+
+| Message | Cause |
+|---|---|
+| `BLUX: User is not authenticated.` | No user is logged in. |
+| `BLUX: Blux modal is open elsewhere.` | Another Blux flow is already open. |
+| `BLUX: Could not find the connected wallet.` | The connected wallet couldn't be resolved. |
+| `BLUX: Wallet does not support signAuthEntry.` | The connected wallet has no `signAuthEntry` capability. |
+
+<Callout type="info">
+  Not every wallet supports signing auth entries. When the connected wallet lacks the capability, the call rejects with `BLUX: Wallet does not support signAuthEntry.` — handle this in your `try/catch`.
+</Callout>
+
+<Callout type="info">
+  To skip the confirmation modal and handle your own confirmation UI, set `showWalletUIs: false` in `createConfig`. The signed entry returned is identical either way.
+</Callout>

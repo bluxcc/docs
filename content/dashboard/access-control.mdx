@@ -1,0 +1,35 @@
+---
+title: Access Control
+description: Control who can log in and from where — allowlists, blocklists, allowed origins, and test accounts.
+---
+
+import { Callout } from 'fumadocs-ui/components/callout';
+
+The dashboard gives you several ways to control **who** can authenticate into your app and **where** your App ID can be used.
+
+## Allowlist & blocklist
+
+You can gate access to your app with one of two complementary modes:
+
+- **Allowlist** — only the accounts you explicitly add can log in. Everyone else is blocked. Use this for private betas, internal tools, or invite-only apps.
+- **Blocklist** — everyone can log in *except* the accounts you add. Use this to ban specific bad actors while keeping the app open.
+
+## Allowed origins
+
+By default your App ID could be used from any website. Enabling **Allowed Origins** locks it down to a list of domains you approve, so other origins can't use your `appId` to authenticate users. This protects your app from being impersonated or having its quota consumed elsewhere.
+
+<Callout type="info">
+  Add every domain your app runs on, including local development (e.g. `http://localhost:3000`) and preview/staging URLs.
+</Callout>
+
+## Test accounts
+
+For development, you can create **test accounts** that use a **predefined OTP** instead of a real email/SMS code. This lets you build and test your login flow end-to-end without waiting on real verification codes.
+
+## CAPTCHA
+
+CAPTCHA support — to add a human-verification challenge to your login flow and protect against automated abuse — is planned for a future release.
+
+<Callout type="info">
+  Access-control features are expanding over time. Combine allowlists/blocklists with allowed origins for layered protection.
+</Callout>

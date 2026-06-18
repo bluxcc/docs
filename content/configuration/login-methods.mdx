@@ -14,11 +14,13 @@ loginMethods?: Array<
   | 'wallet'
   | 'email'
   | 'sms'
+  | 'passkey'
   | 'google'
+  | 'meta'
+  | 'github'
   | 'twitter'
   | 'discord'
-  | 'github'
-  | 'passkey'
+  | 'apple'
 >;
 ```
 
@@ -44,6 +46,30 @@ createConfig({
 ```
 </Tab>
 </Tabs>
+
+## Passkeys
+
+Add `'passkey'` to `loginMethods` to let users sign in with a **passkey** — a passwordless credential backed by their device's biometrics (Face ID, Touch ID, Windows Hello) or a hardware security key. There's no seed phrase to manage and nothing to install, which makes it one of the smoothest onboarding paths for users who are new to Stellar.
+
+```ts
+createConfig({
+  loginMethods: ["passkey", "wallet", "email"],
+});
+```
+
+## Social login
+
+Blux supports social sign-in with providers like **Google**, **Meta**, **GitHub**, **Twitter (X)**, **Discord**, and **Apple**. Add the provider keys to `loginMethods` to show them in the modal:
+
+```ts
+createConfig({
+  loginMethods: ["google", "meta", "github", "email"],
+});
+```
+
+<Callout type="warn">
+  Social providers must first be **enabled for your app in the [Blux Dashboard](/dashboard)**. Each provider you add to `loginMethods` has to be turned on there for your `appId`, otherwise it won't appear in the modal. See [Socials](/dashboard/socials) for setup.
+</Callout>
 
 <Callout type="info">
   Want to see the login methods in action? [Try the live demo →](https://demo.blux.cc)

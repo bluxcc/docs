@@ -1,0 +1,162 @@
+---
+title: Getting Started
+description: From zero to a working Blux integration — the whole flow in one page.
+---
+
+import { Tab, Tabs } from 'fumadocs-ui/components/tabs';
+import { Callout } from 'fumadocs-ui/components/callout';
+import { Card, Cards } from 'fumadocs-ui/components/card';
+
+This page walks you through the full path to a working integration, from creating your app to letting users log in. Each step links to a deeper page if you want more detail.
+
+The flow looks like this:
+
+1. **Create an app in the Dashboard** and grab your App ID.
+2. **Pick a package** — React or core (vanilla JS) — and install it.
+3. **Initialize Blux** with `createConfig` / `BluxProvider`, passing your App ID.
+4. **Customize** appearance, login methods, language, and wallets in the config.
+5. **Use it** — open the built-in modals (`login`, `fundMe`, `profile`) or call the data hooks/functions.
+
+---
+
+## 1. Create your app & get an App ID
+
+Sign in at [dashboard.blux.cc](https://dashboard.blux.cc), create an app, and copy its **App ID**. The dashboard is also where you manage users, analytics, access rules, and which login providers are enabled.
+
+<Card title="Dashboard →" href="/dashboard" description="Create an app, get your App ID, and manage everything outside your code." />
+
+## 2. Pick a package & install
+
+Choose based on your stack — `@bluxcc/react` for React/Next.js/Vite, or `@bluxcc/core` for any other JavaScript project.
+
+<Tabs items={['React', 'JavaScript']} defaultIndex={0}>
+<Tab value="React">
+```bash
+npm install @bluxcc/react
+```
+</Tab>
+<Tab value="JavaScript">
+```bash
+npm install @bluxcc/core
+```
+</Tab>
+</Tabs>
+
+<Cards>
+  <Card title="React setup →" href="/react" description="For React, Next.js, Vite, and CRA." />
+  <Card title="JavaScript setup →" href="/javascript" description="For framework-agnostic or vanilla JS." />
+</Cards>
+
+## 3. Initialize Blux
+
+Wrap your app with `BluxProvider` (React) or call `createConfig` once at startup (vanilla JS). Pass your `appId` so the integration is tied to your dashboard project.
+
+<Tabs items={['React', 'Vanilla JS']} defaultIndex={0}>
+<Tab value="React">
+```tsx
+import { networks, BluxProvider } from "@bluxcc/react";
+
+<BluxProvider
+  config={{
+    appName: "MyApp",
+    appId: "your-app-id",
+    networks: [networks.mainnet],
+  }}
+>
+  {children}
+</BluxProvider>
+```
+</Tab>
+<Tab value="Vanilla JS">
+```ts
+import { createConfig, core } from "@bluxcc/core";
+
+createConfig({
+  appName: "MyApp",
+  appId: "your-app-id",
+  networks: [core.networks.mainnet],
+});
+```
+</Tab>
+</Tabs>
+
+## 4. Customize the config
+
+Everything below is optional — Blux ships with sensible defaults. Add what you need to the same `config` object.
+
+- **Appearance** — match your branding (colors, fonts, radius). → [Appearance](/configuration/appearance)
+- **Login methods** — choose which auth options appear and in what order. → [Login Methods](/configuration/login-methods)
+- **Wallets** — reorder with [`orderWallets`](/configuration/order-wallets) or hide some with [`excludeWallets`](/configuration/exclude-wallets); configure [Trezor](/configuration/trezor).
+- **Language** — set the UI language. → [Language](/configuration/language)
+
+### Enabling login methods
+
+Add the methods you want to the `loginMethods` array — order determines display order:
+
+```ts
+createConfig({
+  appName: "MyApp",
+  appId: "your-app-id",
+  loginMethods: ["wallet", "email", "passkey", "google", "meta"],
+});
+```
+
+| Method | How to enable |
+|---|---|
+| **Wallet** | Add `"wallet"` to `loginMethods`. Connects Freighter, xBull, Trezor, Ledger, and more. |
+| **Email** | Add `"email"` — users get a one-time code by email. |
+| **SMS** | Add `"sms"` — users get a one-time code by phone. |
+| **Passkey** | Add `"passkey"` — passwordless sign-in via Face ID / Touch ID / security key. |
+| **Socials** | Add the provider key (`"google"`, `"meta"`, `"github"`, `"twitter"`, `"discord"`, `"apple"`) **and** enable that provider in the dashboard. |
+
+<Callout type="warn">
+  Social providers must be turned on for your `appId` in the dashboard before they appear in the modal — adding them to `loginMethods` alone isn't enough. See [Socials](/dashboard/socials).
+</Callout>
+
+## 5. Use Blux
+
+Once initialized, you have two kinds of tools: **built-in modals** (full UI, no work on your side) and **data hooks/functions** (raw data for your own UI). In React everything is on the `useBlux` hook; in vanilla JS it's on the `blux` object.
+
+### Built-in modals
+
+<Tabs items={['React', 'Vanilla JS']} defaultIndex={0}>
+<Tab value="React">
+```tsx
+import { useBlux } from "@bluxcc/react";
+
+function App() {
+  const { login, fundMe, profile, isAuthenticated } = useBlux();
+  // login()   → open the auth modal
+  // fundMe()  → open the on-ramp modal
+  // profile() → open the account modal
+}
+```
+</Tab>
+<Tab value="Vanilla JS">
+```ts
+import { blux } from "@bluxcc/core";
+
+blux.login();   // open the auth modal
+blux.fundMe();  // open the on-ramp modal
+blux.profile(); // open the account modal
+```
+</Tab>
+</Tabs>
+
+<Cards>
+  <Card title="Login" href="/react/usage/login" description="Authenticate users with the built-in modal." />
+  <Card title="Fund Me" href="/react/usage/fund-me" description="Let users on-ramp fiat into their wallet." />
+  <Card title="Profile" href="/react/usage/profile" description="Account management — receive, send, swap, activity." />
+  <Card title="Send Transaction" href="/react/usage/send-transaction" description="Submit a signed transaction with a confirmation modal." />
+</Cards>
+
+### Data hooks & functions
+
+When you want to build your own UI, read chain data and call contracts directly:
+
+- **Account data** — balances, transactions, payments, offers, and more. → [React hooks](/react/hooks) · [Core functions](/javascript/core)
+- **Soroban contracts** — read and write smart contracts. → [`useReadContracts`](/react/hooks/use-read-contracts) / [`useWriteContract`](/react/hooks/use-write-contract) (React) · [`readContracts`](/javascript/core/readContracts) / [`writeContract`](/javascript/core/writeContract) (core)
+
+<Callout type="info">
+  That's the whole loop: configure once, then mix built-in modals with hooks/functions however your app needs. Try it all in the [live demo →](https://demo.blux.cc)
+</Callout>

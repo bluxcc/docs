@@ -1,7 +1,9 @@
 {
   "pages": [
     "index",
+    "getting-started",
     "configuration",
+    "dashboard",
     "---SDKs---",
     "javascript",
     "react"

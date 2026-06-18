@@ -1,0 +1,65 @@
+---
+title: Order Wallets
+description: Control the order wallets appear in the Blux login modal.
+---
+
+import { Tab, Tabs } from 'fumadocs-ui/components/tabs';
+import { Callout } from 'fumadocs-ui/components/callout';
+
+The `orderWallets` option lets you control the order in which wallets are displayed in the login modal. List the wallets in the order you want them shown — wallets you don't include keep their default position after the ones you specify.
+
+## Type
+```ts
+type IWalletNames = Array<
+  | "rabet"
+  | "albedo"
+  | "freighter"
+  | "xbull"
+  | "lobstr"
+  | "hana"
+  | "hot"
+  | "klever"
+  | "cactuslink"
+  | "fordefi"
+  | "trezor"
+  | "onekey"
+  | "bitget"
+  | "ledger"
+  | "walletConnect"
+>;
+
+orderWallets?: IWalletNames | string[];
+```
+
+## Usage
+
+<Tabs items={['React', 'Vanilla JS']} defaultIndex={0}>
+<Tab value="React">
+```tsx
+<BluxProvider
+  config={{
+    appName: "MyApp",
+    orderWallets: ["freighter", "xbull", "albedo"],
+  }}
+>
+  {children}
+</BluxProvider>
+```
+</Tab>
+<Tab value="Vanilla JS">
+```ts
+createConfig({
+  appName: "MyApp",
+  orderWallets: ["freighter", "xbull", "albedo"],
+});
+```
+</Tab>
+</Tabs>
+
+<Callout type="warn">
+  **Recent wallet always wins.** The wallet a user most recently logged in with is always pinned to the top of the list, regardless of `orderWallets`. Your ordering applies to all the other wallets.
+</Callout>
+
+<Callout type="info">
+  `orderWallets` only changes display order — to hide wallets entirely, use [Exclude Wallets](/configuration/exclude-wallets).
+</Callout>

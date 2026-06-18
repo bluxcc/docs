@@ -1,0 +1,99 @@
+---
+title: Read Contracts
+description: Read state from Soroban smart contracts by simulating contract calls.
+---
+
+import { Callout } from 'fumadocs-ui/components/callout';
+
+`readContracts` is a **Soroban** helper that reads data from one or more smart contracts. It builds each call, simulates it against the network (no signature, no fee, no on-chain state change), and returns the decoded results. Use it for any read-only contract method — token balances, metadata, pool reserves, configuration, and so on.
+
+It accepts an **array of calls** and runs them in parallel, so you can batch several reads in a single request.
+
+<Callout type="info">
+  `readContracts` simulates against a null source account, so it never spends fees or requires the user to be connected. For methods that mutate state, use [`writeContract`](/javascript/core/writeContract).
+</Callout>
+
+## Type
+```ts
+import { xdr } from "@stellar/stellar-sdk";
+
+type IContractCall = {
+  address: string;     // contract ID (C...)
+  fn: string;          // function name to invoke
+  args: xdr.ScVal[];   // arguments, encoded as ScVal (see ToScVal below)
+};
+
+type ReadContractsOptions = {
+  network?: string;    // Omit to use the active network
+};
+
+// Returns the simulation objects and the decoded native values,
+// index-aligned with the calls you passed in.
+type ReadContractsResult = {
+  raws: SimulateTransactionResponse[];
+  values: unknown[];
+};
+
+const readContracts: (
+  calls: IContractCall[],
+  options?: ReadContractsOptions,
+) => Promise<ReadContractsResult>;
+```
+
+## Encoding arguments with `ToScVal`
+
+Soroban contracts are strongly typed, so every argument must be encoded as the **exact** Soroban type the contract function expects — you can't pass plain JS values. Blux exports the `ToScVal` class for this. **You must** wrap each argument with the matching `ToScVal` method (`u32`, `i128`, `address`, `symbol`, `string`, etc.); passing the wrong type will cause the simulation to fail.
+
+```ts
+import { ToScVal } from "@bluxcc/core";
+
+ToScVal.address("GA...");        // address
+ToScVal.u32(42);                 // u32
+ToScVal.i128("1000000000");      // i128 (accepts string | number | bigint)
+ToScVal.u128(1_000_000n);        // u128
+ToScVal.symbol("transfer");      // symbol
+ToScVal.string("hello");         // string
+ToScVal.boolean(true);           // bool
+ToScVal.vec([ToScVal.u32(1), ToScVal.u32(2)]); // vec
+ToScVal.map({ amount: ToScVal.i128("100") });  // map
+```
+
+Available methods include `i32`, `i64`, `i128`, `i256`, `u32`, `u64`, `u128`, `u256`, `bytes`, `duration`, `timepoint`, `void`, and more.
+
+## Usage
+
+Read a single value — for example a token's `balance`:
+
+```ts
+import { core, ToScVal } from "@bluxcc/core";
+
+const { values } = await core.readContracts([
+  {
+    address: "CB64D3G7SM2RTH6JSGG34DDTFTQ5CFDKVDZJZSODMCX4NJ2HV2KN7OG",
+    fn: "balance",
+    args: [ToScVal.address("GA...USER")],
+  },
+]);
+
+console.log(values[0]); // decoded balance, e.g. "1000000000"
+```
+
+Batch several reads at once — results are index-aligned with the calls:
+
+```ts
+import { core, ToScVal } from "@bluxcc/core";
+
+const TOKEN = "CB64D3G7SM2RTH6JSGG34DDTFTQ5CFDKVDZJZSODMCX4NJ2HV2KN7OG";
+
+const { values } = await core.readContracts([
+  { address: TOKEN, fn: "name", args: [] },
+  { address: TOKEN, fn: "decimals", args: [] },
+  { address: TOKEN, fn: "balance", args: [ToScVal.address("GA...USER")] },
+]);
+
+const [name, decimals, balance] = values;
+```
+
+<Callout type="info">
+  `bigint` results are returned as strings so they're safe to serialize. The raw simulation objects are available under `raws` if you need footprint or resource details.
+</Callout>

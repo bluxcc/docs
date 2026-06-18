@@ -1,0 +1,34 @@
+---
+title: Fund Me
+description: Let users on-ramp fiat into crypto straight to their Stellar wallet from React.
+---
+
+import { Callout } from 'fumadocs-ui/components/callout';
+
+Blux ships with a built-in **Fund Me** modal — an on-ramp flow that lets users buy crypto with fiat and have it delivered directly to their connected Stellar wallet. The modal lists supported on-ramp providers (such as **MoonPay**). Open it by calling `fundMe()` from the `useBlux` hook.
+
+## Import
+```tsx
+import { useBlux } from "@bluxcc/react";
+```
+
+## Usage
+```tsx
+import { useBlux } from "@bluxcc/react";
+
+function FundButton() {
+  const { fundMe, isAuthenticated } = useBlux();
+
+  return (
+    <button disabled={!isAuthenticated} onClick={fundMe}>
+      Add funds
+    </button>
+  );
+}
+```
+
+`fundMe` takes no arguments — it opens the modal for the currently connected user.
+
+<Callout type="info">
+  The user must be authenticated before opening the Fund Me modal, since funds are delivered to their connected wallet. Gate the call behind `isAuthenticated`.
+</Callout>

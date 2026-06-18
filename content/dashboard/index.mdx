@@ -1,0 +1,63 @@
+---
+title: Dashboard
+description: Manage your app, users, and login settings from the Blux Dashboard.
+---
+
+import { Tab, Tabs } from 'fumadocs-ui/components/tabs';
+import { Card, Cards } from 'fumadocs-ui/components/card';
+import { Callout } from 'fumadocs-ui/components/callout';
+import { getPageTreePeers } from 'fumadocs-core/page-tree';
+import { source } from '@/lib/source';
+
+The [Blux Dashboard](https://dashboard.blux.cc) is where you manage everything about your integration that lives outside your code — your users, login providers, access rules, and analytics. Every app you build with Blux is tied to a dashboard project identified by a unique **App ID**.
+
+## Getting started
+
+1. Sign in at [dashboard.blux.cc](https://dashboard.blux.cc).
+2. Create an app — you'll be given an **App ID**.
+3. Pass that `appId` to `createConfig` (Vanilla JS) or `BluxProvider` (React).
+
+<Tabs items={['React', 'Vanilla JS']} defaultIndex={0}>
+<Tab value="React">
+```tsx
+<BluxProvider
+  config={{
+    appName: "MyApp",
+    appId: "your-app-id",
+    networks: [networks.mainnet],
+  }}
+>
+  {children}
+</BluxProvider>
+```
+</Tab>
+<Tab value="Vanilla JS">
+```ts
+createConfig({
+  appName: "MyApp",
+  appId: "your-app-id",
+  networks: [core.networks.mainnet],
+});
+```
+</Tab>
+</Tabs>
+
+Once your app is wired to an `appId`, every login flows through your dashboard project — so the users, analytics, access rules, and enabled social providers you see there all apply to your live app.
+
+<Callout type="info">
+  The model is similar to other auth platforms: log in, grab your App ID, drop it into your config, and manage the rest from the dashboard — no redeploy needed for most changes.
+</Callout>
+
+## What you can do
+
+<Cards>
+  {getPageTreePeers(source.getPageTree(), '/dashboard').map((peer) => (
+    <Card key={peer.url} title={peer.name} href={peer.url}>
+      {peer.description}
+    </Card>
+  ))}
+</Cards>
+
+<Callout type="info">
+  The dashboard is actively evolving — expect new controls and analytics over time.
+</Callout>

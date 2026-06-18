@@ -1,0 +1,52 @@
+---
+title: Trezor
+description: Configure the Trezor hardware wallet integration.
+---
+
+import { Tab, Tabs } from 'fumadocs-ui/components/tabs';
+import { Callout } from 'fumadocs-ui/components/callout';
+
+Blux supports the **Trezor** hardware wallet. Trezor requires a small manifest so its Connect service can identify your app — set it with the optional `trezor` config option.
+
+## Type
+```ts
+trezor?: {
+  email: string;   // a developer contact email
+  appUrl: string;  // the public URL of your app
+};
+```
+
+## Usage
+
+<Tabs items={['React', 'Vanilla JS']} defaultIndex={0}>
+<Tab value="React">
+```tsx
+<BluxProvider
+  config={{
+    appName: "MyApp",
+    trezor: {
+      email: "dev@myapp.com",
+      appUrl: "https://myapp.com",
+    },
+  }}
+>
+  {children}
+</BluxProvider>
+```
+</Tab>
+<Tab value="Vanilla JS">
+```ts
+createConfig({
+  appName: "MyApp",
+  trezor: {
+    email: "dev@myapp.com",
+    appUrl: "https://myapp.com",
+  },
+});
+```
+</Tab>
+</Tabs>
+
+<Callout type="info">
+  The `trezor` config is optional. Provide it when you offer Trezor as a wallet option so Trezor Connect can attribute requests to your app. The `email` and `appUrl` should identify a real contact and your app's public URL.
+</Callout>

@@ -23,15 +23,16 @@ export type CallBuilderOptions = {
 ```typescript
 import { core } from "@bluxcc/core";
 
+// args: [
+//   base: Asset,
+//   counter: Asset,
+//   start_time: number,
+//   end_time: number,
+//   resolution: number,
+//   offset: number,
+// ]
 const result = await core.getTradeAggregation(
-  [
-    base: Asset,
-    counter: Asset,
-    start_time: number,
-    end_time: number,
-    resolution: number,
-    offset: number,
-  ],
+  [base, counter, start_time, end_time, resolution, offset],
   options,
 );
 ```

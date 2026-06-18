@@ -1,0 +1,21 @@
+---
+title: Fund Me
+description: Let users on-ramp fiat into crypto straight to their Stellar wallet.
+---
+
+import { Callout } from 'fumadocs-ui/components/callout';
+
+The `blux.fundMe()` method opens the **Fund Me** modal — a built-in on-ramp flow that lets users buy crypto with fiat and have it delivered directly to their connected Stellar wallet. The modal lists supported on-ramp providers (such as **MoonPay**) so users can top up without leaving your dApp.
+
+## Usage
+```ts
+import { blux } from "@bluxcc/core";
+
+blux.fundMe();
+```
+
+`fundMe()` takes no arguments — it opens the modal for the currently connected user.
+
+<Callout type="info">
+  The user must be authenticated before opening the Fund Me modal, since funds are delivered to their connected wallet. Gate the call behind `blux.isAuthenticated`.
+</Callout>

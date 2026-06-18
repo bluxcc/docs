@@ -1,0 +1,75 @@
+---
+title: useReadContracts
+description: Read state from Soroban smart contracts in React, powered by TanStack Query.
+---
+
+import { Tab, Tabs } from 'fumadocs-ui/components/tabs';
+import { Callout } from 'fumadocs-ui/components/callout';
+
+`useReadContracts` is the React wrapper around [`readContracts`](/javascript/core/readContracts). It reads data from one or more **Soroban** smart contracts by simulating the calls (no signature, no fee) and exposes the result as a TanStack Query, so you get caching, refetching, and loading states for free.
+
+## Import
+```tsx
+import { useReadContracts } from "@bluxcc/react";
+```
+
+## Encoding arguments with `ToScVal`
+
+Soroban is strongly typed, so each argument **must** be encoded with the `ToScVal` class to match the type the contract expects. See the [`ToScVal` reference](/javascript/core/readContracts#encoding-arguments-with-toscval) for the full list of methods.
+
+## Usage
+
+Read a token's `name`, `decimals`, and a user's `balance` in one batch:
+
+<Tabs items={['index.tsx', 'config.ts']} defaultIndex={0}>
+<Tab value="index.tsx">
+```tsx
+import { useReadContracts, useBlux, ToScVal } from "@bluxcc/react";
+
+const TOKEN = "CB64D3G7SM2RTH6JSGG34DDTFTQ5CFDKVDZJZSODMCX4NJ2HV2KN7OG";
+
+function TokenInfo() {
+  const { user } = useBlux();
+
+  const { data, isLoading } = useReadContracts([
+    { address: TOKEN, fn: "name", args: [] },
+    { address: TOKEN, fn: "decimals", args: [] },
+    { address: TOKEN, fn: "balance", args: [ToScVal.address(user?.address ?? "")] },
+  ]);
+
+  if (isLoading) return <p>Loading…</p>;
+
+  const [name, decimals, balance] = data?.values ?? [];
+  return <p>{name}: {balance}</p>;
+}
+```
+</Tab>
+<Tab value="config.ts">
+```tsx
+root.render(
+  <BluxProvider
+    config={{
+      appName: "MyApp",
+      networks: [networks.testnet, networks.mainnet],
+    }}
+  >
+    <App />
+  </BluxProvider>
+);
+```
+</Tab>
+</Tabs>
+
+You can pass network options and TanStack Query options (such as `enabled`) as the second and third arguments:
+
+```tsx
+const { data } = useReadContracts(
+  calls,
+  { network: networks.mainnet },
+  { enabled: isAuthenticated, staleTime: 60000 }
+);
+```
+
+<Callout type="info">
+  The hook returns the standard TanStack Query result. The contract data lives on `data` as `{ raws, values }`, index-aligned with the calls you passed in.
+</Callout>

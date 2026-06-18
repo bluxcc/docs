@@ -8,8 +8,8 @@ The `getAccount` function returns the details of a single Stellar account. Omit 
 ## Type
 ```tsx
 type GetAccountOptions = {
-  address?: string; // Ignore to get the details of the connected account.
-  network?: string; // Ignore to use the current active network
+  address?: string; // Omit to use the connected account
+  network?: string; // Omit to use the active network
 };
 
 type GetAccountResult = Horizon.AccountResponse | null;

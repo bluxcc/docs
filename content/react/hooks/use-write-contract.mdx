@@ -1,0 +1,85 @@
+---
+title: useWriteContract
+description: Invoke state-changing Soroban contract methods from React, powered by TanStack Query.
+---
+
+import { Tab, Tabs } from 'fumadocs-ui/components/tabs';
+import { Callout } from 'fumadocs-ui/components/callout';
+
+`useWriteContract` is the React wrapper around [`writeContract`](/javascript/core/writeContract). It invokes a state-changing **Soroban** contract method, prompting the connected user to sign, and exposes the call as a TanStack Query **mutation** — giving you `mutate`/`mutateAsync`, plus `isPending`, `isSuccess`, and `error` states.
+
+## Import
+```tsx
+import { useWriteContract } from "@bluxcc/react";
+```
+
+## Encoding arguments with `ToScVal`
+
+Each argument **must** be encoded with the `ToScVal` class so it matches the Soroban type the contract expects. See the [`ToScVal` reference](/javascript/core/readContracts#encoding-arguments-with-toscval) for the full list of methods.
+
+## Usage
+
+Call a token's `transfer` method when the user clicks a button:
+
+<Tabs items={['index.tsx', 'config.ts']} defaultIndex={0}>
+<Tab value="index.tsx">
+```tsx
+import { useWriteContract, useBlux, ToScVal } from "@bluxcc/react";
+
+const TOKEN = "CB64D3G7SM2RTH6JSGG34DDTFTQ5CFDKVDZJZSODMCX4NJ2HV2KN7OG";
+
+function TransferButton() {
+  const { user } = useBlux();
+  const { mutate, isPending } = useWriteContract();
+
+  const transfer = () =>
+    mutate({
+      call: {
+        address: TOKEN,
+        fn: "transfer",
+        args: [
+          ToScVal.address(user?.address ?? ""), // from
+          ToScVal.address("GB...TO"),           // to
+          ToScVal.i128("1000000000"),           // amount
+        ],
+      },
+    });
+
+  return (
+    <button onClick={transfer} disabled={isPending}>
+      {isPending ? "Sending…" : "Transfer"}
+    </button>
+  );
+}
+```
+</Tab>
+<Tab value="config.ts">
+```tsx
+root.render(
+  <BluxProvider
+    config={{
+      appName: "MyApp",
+      networks: [networks.testnet, networks.mainnet],
+    }}
+  >
+    <App />
+  </BluxProvider>
+);
+```
+</Tab>
+</Tabs>
+
+The mutation variables are `{ call, options }`, where `call` is the contract call and `options` can carry a `network`. Use `mutateAsync` if you prefer to `await` the result:
+
+```tsx
+const { mutateAsync } = useWriteContract();
+
+const result = await mutateAsync({
+  call: { address: TOKEN, fn: "transfer", args: [/* … */] },
+  options: { network: networks.mainnet },
+});
+```
+
+<Callout type="info">
+  A user must be connected before calling the mutation — the connected account is the transaction source. Handle rejection and simulation failures via the mutation's `onError` callback or a `try/catch` around `mutateAsync`.
+</Callout>

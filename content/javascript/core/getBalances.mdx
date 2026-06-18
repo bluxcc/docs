@@ -8,8 +8,8 @@ The `getBalances` function returns the balances of a Stellar account. Omit `addr
 ## Type
 ```tsx
 type GetBalancesOptions = {
-  address?: string; // Ignore to get the details of the connected account.
-  network?: string; // Ignore to use the current active network
+  address?: string; // Omit to use the connected account
+  network?: string; // Omit to use the active network
   includeZeroBalances?: boolean;
 };
 

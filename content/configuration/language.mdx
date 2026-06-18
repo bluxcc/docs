@@ -1,0 +1,54 @@
+---
+title: Language
+description: Set the language used across the Blux modals and UI.
+---
+
+import { Tab, Tabs } from 'fumadocs-ui/components/tabs';
+import { Callout } from 'fumadocs-ui/components/callout';
+
+The `lang` option sets the language for all Blux UI — the login, profile, send, swap, and fund modals. When omitted, Blux defaults to English.
+
+## Type
+```ts
+type LanguageKey =
+  | 'en'  // English
+  | 'es'  // Spanish
+  | 'pt'  // Portuguese
+  | 'fr'  // French
+  | 'de'  // German
+  | 'ru'  // Russian
+  | 'zh'  // Chinese
+  | 'ja'  // Japanese
+  | 'ko'; // Korean
+
+lang?: LanguageKey;
+```
+
+## Usage
+
+<Tabs items={['React', 'Vanilla JS']} defaultIndex={0}>
+<Tab value="React">
+```tsx
+<BluxProvider
+  config={{
+    appName: "MyApp",
+    lang: "es",
+  }}
+>
+  {children}
+</BluxProvider>
+```
+</Tab>
+<Tab value="Vanilla JS">
+```ts
+createConfig({
+  appName: "MyApp",
+  lang: "es",
+});
+```
+</Tab>
+</Tabs>
+
+<Callout type="info">
+  Want to preview the supported languages? [Try the live demo →](https://demo.blux.cc)
+</Callout>
