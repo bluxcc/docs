@@ -1,0 +1,231 @@
+---
+title: Swap
+description: Trade one asset for another through the Stellar DEX and liquidity pools — Blux finds the best path and submits it for you.
+---
+
+import { Callout } from 'fumadocs-ui/components/callout';
+
+`swap` trades one asset for another through the Stellar **DEX** and **liquidity pools**. You describe the trade — _sell this, buy that_ — and Blux discovers the best path payment automatically, applies a slippage guardrail, and submits the transaction through its signing flow.
+
+It builds on Stellar's two path-payment operations:
+
+- **`exactIn`** (the default) — you send an exact amount of `fromAsset` and the received amount floats. Blux quotes the route, then sets a `destMin` floor so you never receive less than your slippage tolerance allows.
+- **`exactOut`** — you receive an exact amount of `toAsset` and the spent amount floats. Blux sets a `sendMax` ceiling so you never spend more than your slippage tolerance allows.
+
+By default the bought asset is delivered back to the connected account (a **self-swap**); pass `to` to send it somewhere else. The connected account is always the source, and the call resolves to the same [`ISubmittedTransaction`](/javascript/usage/send-transaction#return-value) envelope returned by [`sendTransaction`](/javascript/usage/send-transaction) and [`transfer`](/javascript/core/transfer).
+
+<Callout type="info">
+  `swap` must be called after `createConfig` and while a user is connected — the connected account is the source. Like `sendTransaction`, it shows the Blux confirmation modal before signing (unless you set `showWalletUIs: false` in `createConfig`). Wrap the call in `try/catch` to handle validation errors and user rejection.
+</Callout>
+
+## Type
+```ts
+import { Asset } from "@stellar/stellar-sdk";
+
+type Numberish = string | number | bigint;
+
+// 'xlm' | 'native' | a 'CODE:ISSUER' string | an Asset instance.
+type AssetArg = string | Asset;
+
+// Which side of the trade is fixed.
+type SwapType = "exactIn" | "exactOut";
+
+type SwapOptions = {
+  // Asset being sold. 'xlm'/'native', a 'CODE:ISSUER' string, or an Asset.
+  fromAsset: AssetArg;
+
+  // Asset being bought. Same accepted forms as fromAsset.
+  toAsset: AssetArg;
+
+  // The fixed amount, in decimal units. For 'exactIn' this is how much
+  // fromAsset to send; for 'exactOut' it is how much toAsset to receive.
+  // Numbers and bigints are coerced to a string.
+  amount: Numberish;
+
+  // Which side is fixed. Defaults to 'exactIn'.
+  type?: SwapType;
+
+  // Where the bought asset is delivered: a Stellar address (G.../M...) or a
+  // SEP-2 federated address. Defaults to the connected account (a self-swap).
+  to?: string;
+
+  // Maximum acceptable slippage as a fraction, where 0.005 = 0.5%. Defaults
+  // to 0.005. Must be >= 0 and < 1.
+  slippage?: number;
+
+  // Optional text memo to attach to the transaction.
+  memo?: string;
+
+  // Network passphrase to swap on. Defaults to the active network.
+  network?: string;
+};
+
+const swap: (options: SwapOptions) => Promise<ISubmittedTransaction>;
+```
+
+| Parameter | Type | Default | Description |
+|---|---|---|---|
+| `fromAsset` | `string \| Asset` | — | **Required.** Asset being sold: `"xlm"`/`"native"`, `"CODE:ISSUER"`, or an `Asset`. |
+| `toAsset` | `string \| Asset` | — | **Required.** Asset being bought. Same accepted forms as `fromAsset`; must differ from it. |
+| `amount` | `string \| number \| bigint` | — | **Required.** The fixed amount in decimal units (`"100"`, not base units). Meaning depends on `type` — see below. Must be greater than zero. |
+| `type` | `"exactIn" \| "exactOut"` | `"exactIn"` | Which side of the trade is fixed. |
+| `to` | `string` | connected account | Recipient of the bought asset: `G…`/`M…` or a SEP-2 federated address. Omit for a self-swap. |
+| `slippage` | `number` | `0.005` | Maximum slippage as a fraction (`0.005` = 0.5%). Must be `>= 0` and `< 1`. |
+| `memo` | `string` | — | Optional text memo. |
+| `network` | `string` | active network | Network passphrase to swap on — use the `networks` map (e.g. `networks.testnet`). |
+
+## `exactIn` vs. `exactOut`
+
+`amount` always names the **fixed** side; the other side floats within your slippage tolerance.
+
+| | `exactIn` (default) | `exactOut` |
+|---|---|---|
+| `amount` is the exact… | `fromAsset` you **send** | `toAsset` you **receive** |
+| What floats | the amount received | the amount sent |
+| Slippage guardrail | `destMin` — the least you'll accept | `sendMax` — the most you'll spend |
+| Underlying operation | [`pathPaymentStrictSend`](/javascript/core/getStrictSendPaths) | [`pathPaymentStrictReceive`](/javascript/core/getStrictReceivePaths) |
+
+In both cases Blux discovers the best available route (including any intermediary hops) and embeds it in the operation, so you never assemble the path yourself.
+
+## Slippage
+
+`slippage` is a fraction of the quoted price, not a percentage: `0.005` means 0.5%, `0.01` means 1%. Blux derives the on-chain guardrail from the quote and your tolerance:
+
+- `exactIn` → `destMin = quotedOut × (1 − slippage)`, rounded **down**.
+- `exactOut` → `sendMax = quotedIn × (1 + slippage)`, rounded **up**.
+
+The bound is always rounded so it is never tighter than you asked for. If the market moves past it before the transaction lands, the operation fails on-chain rather than executing at a worse price. A tighter `slippage` protects the price but is more likely to fail in a volatile market; a looser one is more likely to fill.
+
+## Trustlines
+
+To receive an issued asset, the recipient needs a trustline for it.
+
+- **Self-swap into an asset you've never held** — Blux prepends the required `changeTrust` operation automatically, so a first-time buy of an issued asset just works.
+- **Delivering to another account (`to`)** — the recipient must already trust `toAsset`. If they don't, `swap` throws rather than silently failing on-chain.
+
+Swapping _into_ native XLM never needs a trustline.
+
+## Usage
+
+### Sell an exact amount (`exactIn`)
+
+The simplest case — sell exactly 100 XLM for USDC, delivered back to yourself. `exactIn` is the default, so `type` can be omitted:
+
+```ts
+import { core } from "@bluxcc/core";
+
+const result = await core.swap({
+  fromAsset: "xlm",
+  toAsset: "USDC:GA5ZSEJYB37JRC5AVCIA5MOP4RHTM335X2KGX3IHOJAPP5RE34K4KZVN",
+  amount: "100", // sell exactly 100 XLM
+});
+
+console.log(result.hash);
+```
+
+If this is the first time the account holds USDC, the required trustline is added for you.
+
+### Buy an exact amount (`exactOut`)
+
+Receive exactly 50 USDC, spending however much XLM the route requires (up to the slippage-bounded `sendMax`):
+
+```ts
+import { core } from "@bluxcc/core";
+
+await core.swap({
+  fromAsset: "xlm",
+  toAsset: "USDC:GA5ZSEJYB37JRC5AVCIA5MOP4RHTM335X2KGX3IHOJAPP5RE34K4KZVN",
+  amount: "50",
+  type: "exactOut", // receive exactly 50 USDC
+});
+```
+
+### Deliver the bought asset to another account
+
+Pass `to` to send the proceeds elsewhere, with a tighter slippage and a memo. The destination must already trust `toAsset`:
+
+```ts
+import { core } from "@bluxcc/core";
+
+await core.swap({
+  fromAsset: "USDC:GA5ZSEJYB37JRC5AVCIA5MOP4RHTM335X2KGX3IHOJAPP5RE34K4KZVN",
+  toAsset: "xlm",
+  amount: "25",
+  to: "GDESTINATION...ADDRESS",
+  slippage: 0.01, // 1%
+  memo: "cash out",
+});
+```
+
+`to` also accepts a SEP-2 federated address (`alice*example.com`), which Blux resolves before building the swap.
+
+### Pass an `Asset` instance
+
+Anywhere a `"CODE:ISSUER"` string is accepted you can pass an `Asset` instead:
+
+```ts
+import { core, StellarSdk } from "@bluxcc/core";
+
+const usdc = new StellarSdk.Asset(
+  "USDC",
+  "GA5ZSEJYB37JRC5AVCIA5MOP4RHTM335X2KGX3IHOJAPP5RE34K4KZVN",
+);
+
+await core.swap({ fromAsset: "xlm", toAsset: usdc, amount: "100" });
+```
+
+### Swap on a specific network
+
+Omit `network` to use the active network, or pass a passphrase explicitly:
+
+```ts
+import { core, networks } from "@bluxcc/core";
+
+await core.swap({
+  fromAsset: "xlm",
+  toAsset: "USDC:GA5ZSEJYB37JRC5AVCIA5MOP4RHTM335X2KGX3IHOJAPP5RE34K4KZVN",
+  amount: "100",
+  network: networks.mainnet,
+});
+```
+
+## Return value
+
+`swap` resolves to an [`ISubmittedTransaction`](/javascript/usage/send-transaction#return-value):
+
+```ts
+interface ISubmittedTransaction {
+  hash: string;                          // the transaction hash
+  returnValue: () => Promise<unknown>;   // null — a path payment returns no value
+  raw: SubmitTransactionResponse | GetSuccessfulTransactionResponse;
+}
+```
+
+`result.hash` identifies the swap; the full Horizon response is available under `result.raw`.
+
+## Errors
+
+`swap` rejects with `BLUX:`-prefixed messages so failures are actionable:
+
+| Message | Cause |
+|---|---|
+| `BLUX: swap must be called after createConfig` | Called before `createConfig` ran. |
+| `BLUX: swap requires an options object.` | Called with no options object. |
+| `BLUX: No account is logged in.` | No connected user to act as the source. |
+| `BLUX: swap requires "fromAsset" and "toAsset".` | Either asset was missing. |
+| `BLUX: swap requires an "amount".` | `amount` was missing. |
+| `BLUX: swap "type" must be "exactIn" or "exactOut".` | An invalid `type` was passed. |
+| `BLUX: swap "slippage" must be a fraction between 0 and 1 (e.g. 0.005 for 0.5%).` | `slippage` was out of the `[0, 1)` range. |
+| `BLUX: swap "amount" must be greater than zero.` | `amount` was zero or negative. |
+| `BLUX: "amount" could not be represented precisely; pass it as a string (e.g. "0.0000001").` | A tiny/huge `amount` rendered in exponential form — pass it as a string. |
+| `BLUX: "fromAsset" and "toAsset" must be different.` | Both sides resolved to the same asset. |
+| `BLUX: The logged-in account is not active on this network yet.` | The source account isn't funded on this network. |
+| `BLUX: The destination account does not exist; a swap cannot create it.` | `to` points at an account that hasn't been created. |
+| `BLUX: The destination has no trustline for <CODE>.` | A non-self destination doesn't trust `toAsset`. |
+| `BLUX: No swap path found from <CODE> to <CODE>.` | No route exists between the two assets right now. |
+
+Errors raised while signing and submitting (`BLUX: User is not authenticated.`, network busy, on-chain failure, …) propagate unchanged from [`sendTransaction`](/javascript/usage/send-transaction#errors).
+
+<Callout type="info">
+  Want to quote a swap before committing — to show the user a rate or preview the floating side? Read the route directly with [`getStrictSendPaths`](/javascript/core/getStrictSendPaths) (`exactIn`) or [`getStrictReceivePaths`](/javascript/core/getStrictReceivePaths) (`exactOut`); they take no signature and cost nothing.
+</Callout>

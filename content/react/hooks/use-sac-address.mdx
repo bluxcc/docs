@@ -1,0 +1,131 @@
+---
+title: useSacAddress
+description: Derive the Stellar Asset Contract (SAC) id of a classic asset in React — synchronous and memoized.
+---
+
+import { Tab, Tabs } from 'fumadocs-ui/components/tabs';
+import { Callout } from 'fumadocs-ui/components/callout';
+
+`useSacAddress` is the React wrapper around [`getSacAddress`](/javascript/core/getSacAddress). It returns the **Stellar Asset Contract (SAC)** id of a classic asset — native XLM or a `CODE:ISSUER` pair.
+
+Because the underlying derivation is **synchronous and local** (no network call, regardless of whether the SAC is deployed), this is **not** a TanStack Query — there's no loading state. The value is computed with `useMemo` and returned right away as `{ data, error }`. An invalid asset or missing network passphrase is captured into `error` rather than thrown during render.
+
+## Import
+```tsx
+import { useSacAddress } from "@bluxcc/react";
+```
+
+## Usage
+
+Derive the SAC id of an issued asset:
+
+<Tabs items={['index.tsx', 'config.ts']} defaultIndex={0}>
+<Tab value="index.tsx">
+```tsx
+import { useSacAddress } from "@bluxcc/react";
+
+function SacId() {
+  const { data: sac, error } = useSacAddress("USDC:GA5Z....KZVN");
+
+  if (error) return <p>{error.message}</p>;
+  return <code>{sac}</code>; // "C..."
+}
+```
+</Tab>
+<Tab value="config.ts">
+```tsx
+root.render(
+  <BluxProvider
+    config={{
+      appName: "MyApp",
+      networks: [networks.testnet, networks.mainnet],
+    }}
+  >
+    <App />
+  </BluxProvider>
+);
+```
+</Tab>
+</Tabs>
+
+It also accepts `"xlm"`/`"native"` or an `Asset` instance, and an optional network passphrase as the second argument:
+
+```tsx
+import { useSacAddress, networks } from "@bluxcc/react";
+
+// Native XLM on a specific network.
+const { data } = useSacAddress("xlm", networks.mainnet);
+```
+
+### Chain into a metadata read
+
+A common flow is deriving the SAC, then reading its on-chain metadata with [`useTokenMetadata`](/react/hooks/use-token-metadata) once the id is known:
+
+<Tabs items={['index.tsx', 'config.ts']} defaultIndex={0}>
+<Tab value="index.tsx">
+```tsx
+import { useSacAddress, useTokenMetadata } from "@bluxcc/react";
+
+function AssetCard() {
+  const { data: sac } = useSacAddress("USDC:GA5Z....KZVN");
+  const { data: meta } = useTokenMetadata(sac ?? "", undefined, {
+    enabled: Boolean(sac),
+  });
+
+  return <p>{meta?.symbol} · {meta?.decimals} decimals</p>;
+}
+```
+</Tab>
+<Tab value="config.ts">
+```tsx
+root.render(
+  <BluxProvider
+    config={{
+      appName: "MyApp",
+      networks: [networks.testnet, networks.mainnet],
+    }}
+  >
+    <App />
+  </BluxProvider>
+);
+```
+</Tab>
+</Tabs>
+
+<Callout type="info">
+  Pass a **stable** `asset` — a string, or a memoized `Asset` instance — so the memo doesn't recompute on every render. A fresh `new Asset(...)` created inline in the component body changes identity each render.
+</Callout>
+
+## Parameters
+
+### `asset` (required)
+`string | Asset`
+
+The asset: `"xlm"`/`"native"`, a `"CODE:ISSUER"` string, or an `Asset` instance.
+
+### `network`
+`string | undefined`
+
+Network passphrase to derive against. Import `networks` from `@bluxcc/react` to select one. The SAC id is network-specific; omit to use the active network.
+
+## Return Type
+
+`useSacAddress` returns a plain object — **not** a TanStack Query result:
+
+```tsx
+type UseSacAddressResult = {
+  // The SAC contract id (C…), or undefined when it can't be derived.
+  data: string | undefined;
+  // The error thrown while deriving, or null on success.
+  error: Error | null;
+};
+```
+
+| Property | Type | Description |
+|---|---|---|
+| `data` | `string \| undefined` | The SAC contract id (`C…`) on success, or `undefined` when derivation failed. |
+| `error` | `Error \| null` | The captured error (invalid asset, or no network passphrase available), or `null` on success. |
+
+<Callout type="info">
+  There is no `isLoading` / `isSuccess` here — the result is available synchronously on first render. If you need to read the SAC's on-chain metadata, that read **is** async; feed `data` into [`useTokenMetadata`](/react/hooks/use-token-metadata).
+</Callout>

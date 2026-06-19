@@ -1,0 +1,116 @@
+---
+title: Get Token Metadata
+description: Read a SEP-41 token / Stellar Asset Contract's decimals, name, symbol, and owner by simulation — no account or fees.
+---
+
+import { Callout } from 'fumadocs-ui/components/callout';
+
+`getTokenMetadata` reads a token contract's metadata by simulating its read-only entrypoints. Like [`readContracts`](/javascript/core/readContracts), it simulates against a null source account — **no account, signing, or fees** — so it works for any contract id, deployed or not yet funded.
+
+`decimals`, `name`, and `symbol` come from the standard **SEP-41** token interface. `owner` is read separately and is omitted when the contract has no `owner()` function — notably **Stellar Asset Contracts**, which expose `admin()` rather than `owner()`.
+
+<Callout type="info">
+  `getTokenMetadata` must be called after `createConfig`, but the user does **not** need to be connected — it's a read-only simulation. Pass a token contract id (`C…`) such as a SAC from [`getSacAddress`](/javascript/core/getSacAddress).
+</Callout>
+
+## Type
+```ts
+type GetTokenMetadataOptions = {
+  // Network passphrase to read from. Defaults to the active network.
+  network?: string;
+};
+
+type TokenMetadata = {
+  // Number of decimal places the token uses.
+  decimals: number;
+
+  // Human-readable token name.
+  name: string;
+
+  // Token symbol / code.
+  symbol: string;
+
+  // The token's owner, when the contract exposes an owner() function. Absent
+  // for contracts without one — notably Stellar Asset Contracts, which expose
+  // admin() rather than owner().
+  owner?: string;
+};
+
+const getTokenMetadata: (
+  address: string,
+  options?: GetTokenMetadataOptions,
+) => Promise<TokenMetadata>;
+```
+
+| Parameter | Type | Default | Description |
+|---|---|---|---|
+| `address` | `string` | — | **Required.** The token contract id (`C…`), e.g. a SAC from [`getSacAddress`](/javascript/core/getSacAddress). |
+| `options.network` | `string` | active network | Network passphrase to read from. |
+
+## Usage
+
+### Read a token contract directly
+
+```ts
+import { core } from "@bluxcc/core";
+
+const metadata = await core.getTokenMetadata(
+  "CB64D3G7SM2RTH6JSGG34DDTFTQ5CFDKVDZJZSODMCX4NJ2HV2KN7OG",
+);
+
+console.log(metadata);
+// { decimals: 7, name: "USD Coin", symbol: "USDC", owner: "G..." }
+```
+
+### Read a classic asset's metadata through its SAC
+
+Derive the Stellar Asset Contract id with [`getSacAddress`](/javascript/core/getSacAddress), then read it. A SAC has no `owner()`, so `owner` comes back `undefined`:
+
+```ts
+import { core } from "@bluxcc/core";
+
+const sac = core.getSacAddress(
+  "USDC:GA5ZSEJYB37JRC5AVCIA5MOP4RHTM335X2KGX3IHOJAPP5RE34K4KZVN",
+);
+
+const metadata = await core.getTokenMetadata(sac);
+// { decimals: 7, name: "USDC:GA5Z...", symbol: "USDC", owner: undefined }
+```
+
+### Read from a specific network
+
+```ts
+import { core, networks } from "@bluxcc/core";
+
+const metadata = await core.getTokenMetadata(
+  "CB64D3G7SM2RTH6JSGG34DDTFTQ5CFDKVDZJZSODMCX4NJ2HV2KN7OG",
+  { network: networks.mainnet },
+);
+```
+
+## Return value
+
+`getTokenMetadata` resolves to a `TokenMetadata` object:
+
+| Field | Type | Description |
+|---|---|---|
+| `decimals` | `number` | Number of decimal places the token uses — divide raw base-unit balances by `10 ** decimals` to display them. |
+| `name` | `string` | Human-readable token name. |
+| `symbol` | `string` | Token symbol / code. |
+| `owner` | `string \| undefined` | The contract owner when an `owner()` entrypoint exists; `undefined` otherwise (e.g. a SAC). |
+
+<Callout type="info">
+  `decimals` is the key you need before showing or sending amounts: a token with 7 decimals represents `100` tokens as `1000000000` base units. Pair it with [`transfer`](/javascript/core/transfer)'s `token` option or [`readContracts`](/javascript/core/readContracts)' `balance` read.
+</Callout>
+
+## Errors
+
+`getTokenMetadata` rejects with `BLUX:`-prefixed messages:
+
+| Message | Cause |
+|---|---|
+| `BLUX: getTokenMetadata must be called after createConfig` | Called before `createConfig` ran. |
+| `BLUX: getTokenMetadata requires a token contract id (C...).` | `address` was missing or not a valid contract id. |
+| `BLUX: getTokenMetadata could not read the token.` | The simulation returned no readable result. |
+
+A contract that is missing the standard `decimals`/`name`/`symbol` entrypoints causes the underlying simulation to fail, which propagates as an error — `getTokenMetadata` expects a SEP-41-compatible token. A missing `owner()` is **not** an error; `owner` is simply omitted.

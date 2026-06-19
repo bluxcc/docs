@@ -1,0 +1,107 @@
+---
+title: Get SAC Address
+description: Derive the Stellar Asset Contract (SAC) id of a classic asset — locally, with no network call.
+---
+
+import { Callout } from 'fumadocs-ui/components/callout';
+
+`getSacAddress` returns the **Stellar Asset Contract (SAC)** id of a classic asset. Every classic asset — native XLM or a `CODE:ISSUER` pair — has a deterministic Soroban contract id derived from the asset plus the network passphrase. That contract, the SAC, is what lets Soroban contracts hold and move the asset.
+
+The id is computed **locally** from the asset and passphrase, so there is no network call and the value is returned whether or not the SAC has actually been deployed yet. The function is synchronous — there is nothing to `await`.
+
+Feed the result into [`getTokenMetadata`](/javascript/core/getTokenMetadata), [`transfer`](/javascript/core/transfer)'s `token` option, or [`readContracts`](/javascript/core/readContracts) / [`writeContract`](/javascript/core/writeContract) to treat a classic asset as a Soroban token.
+
+## Type
+```ts
+import { Asset } from "@stellar/stellar-sdk";
+
+// 'xlm' | 'native' | a 'CODE:ISSUER' string | an Asset instance.
+type AssetArg = string | Asset;
+
+const getSacAddress: (asset: AssetArg, network?: string) => string;
+```
+
+| Parameter | Type | Default | Description |
+|---|---|---|---|
+| `asset` | `string \| Asset` | — | **Required.** The asset: `"xlm"`/`"native"`, a `"CODE:ISSUER"` string, or an `Asset` instance. |
+| `network` | `string` | active network | Network passphrase to derive against. The SAC id differs per network. |
+
+<Callout type="info">
+  The SAC id is **network-specific** — the same asset has a different SAC on testnet and mainnet because the passphrase is part of the derivation. Omit `network` to use the active network configured by `createConfig`, or pass one explicitly.
+</Callout>
+
+## Usage
+
+### Native XLM
+
+```ts
+import { core } from "@bluxcc/core";
+
+const xlmSac = core.getSacAddress("xlm");
+console.log(xlmSac); // "C..."
+```
+
+### An issued asset
+
+Pass the asset in `"CODE:ISSUER"` form:
+
+```ts
+import { core } from "@bluxcc/core";
+
+const usdcSac = core.getSacAddress(
+  "USDC:GA5ZSEJYB37JRC5AVCIA5MOP4RHTM335X2KGX3IHOJAPP5RE34K4KZVN",
+);
+```
+
+You can also pass an `Asset` instance:
+
+```ts
+import { core, StellarSdk } from "@bluxcc/core";
+
+const usdc = new StellarSdk.Asset(
+  "USDC",
+  "GA5ZSEJYB37JRC5AVCIA5MOP4RHTM335X2KGX3IHOJAPP5RE34K4KZVN",
+);
+
+const usdcSac = core.getSacAddress(usdc);
+```
+
+### Derive against a specific network
+
+```ts
+import { core, networks } from "@bluxcc/core";
+
+const usdcSacOnMainnet = core.getSacAddress(
+  "USDC:GA5ZSEJYB37JRC5AVCIA5MOP4RHTM335X2KGX3IHOJAPP5RE34K4KZVN",
+  networks.mainnet,
+);
+```
+
+### Read a classic asset's token metadata
+
+The SAC id is exactly what [`getTokenMetadata`](/javascript/core/getTokenMetadata) and the Soroban token helpers expect, so the two compose naturally:
+
+```ts
+import { core } from "@bluxcc/core";
+
+const sac = core.getSacAddress(
+  "USDC:GA5ZSEJYB37JRC5AVCIA5MOP4RHTM335X2KGX3IHOJAPP5RE34K4KZVN",
+);
+
+const metadata = await core.getTokenMetadata(sac);
+// { decimals: 7, name: "USDC:GA5Z...", symbol: "USDC" }
+```
+
+## Errors
+
+`getSacAddress` throws synchronously with `BLUX:`-prefixed messages:
+
+| Message | Cause |
+|---|---|
+| `BLUX: getSacAddress needs a network passphrase — pass one, or call createConfig first.` | No `network` was passed and there is no active network (e.g. `createConfig` hasn't run). |
+
+It also propagates the underlying SDK error if `asset` is malformed (not `"xlm"`/`"native"`, a valid `"CODE:ISSUER"` pair, or an `Asset`).
+
+<Callout type="info">
+  A SAC id is returned even when the contract has not been deployed on-chain yet. Deriving the id is free and offline; deploying or _using_ the SAC is what touches the network. See the Stellar **assets** skill for the full SAC interop story.
+</Callout>

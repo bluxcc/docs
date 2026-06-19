@@ -1,0 +1,172 @@
+---
+title: useSwap
+description: Swap one asset for another from React, powered by a TanStack Query mutation.
+---
+
+import { Tab, Tabs } from 'fumadocs-ui/components/tabs';
+import { Callout } from 'fumadocs-ui/components/callout';
+
+`useSwap` is the React wrapper around [`swap`](/javascript/core/swap). It trades one asset for another through the Stellar **DEX** and **liquidity pools** — discovering the best path payment and applying a slippage guardrail for you — and exposes the call as a TanStack Query **mutation**.
+
+Named after wagmi's mutation hooks, it returns `swap` (fire-and-forget, an alias of `mutate`) and `swapAsync` (returns a promise, an alias of `mutateAsync`), alongside the usual `isPending`, `isSuccess`, `error`, and `data` state. A user must be connected — the connected account is the source.
+
+## Import
+```tsx
+import { useSwap } from "@bluxcc/react";
+```
+
+## Usage
+
+Sell exactly 100 XLM for USDC when the user clicks a button. `exactIn` is the default, so you only describe the trade:
+
+<Tabs items={['index.tsx', 'config.ts']} defaultIndex={0}>
+<Tab value="index.tsx">
+```tsx
+import { useSwap } from "@bluxcc/react";
+
+const USDC = "USDC:GA5Z....KZVN";
+
+function SwapButton() {
+  const { swap, isPending, error } = useSwap();
+
+  return (
+    <>
+      <button
+        onClick={() => swap({ fromAsset: "xlm", toAsset: USDC, amount: "100" })}
+        disabled={isPending}
+      >
+        {isPending ? "Swapping…" : "Sell 100 XLM"}
+      </button>
+      {error && <p>{error.message}</p>}
+    </>
+  );
+}
+```
+</Tab>
+<Tab value="config.ts">
+```tsx
+root.render(
+  <BluxProvider
+    config={{
+      appName: "MyApp",
+      networks: [networks.testnet, networks.mainnet],
+    }}
+  >
+    <App />
+  </BluxProvider>
+);
+```
+</Tab>
+</Tabs>
+
+The mutation variables are the core [`SwapOptions`](/javascript/core/swap#type) verbatim, so every knob is just a field on the object you pass — `type` (`exactIn`/`exactOut`), `slippage`, `to`, `memo`, and `network`.
+
+### Buy an exact amount
+
+Pass `type: "exactOut"` to fix the **received** side and let the spent amount float:
+
+```tsx
+const { swap } = useSwap();
+
+// Receive exactly 50 USDC, spending up to a slippage-bounded amount of XLM.
+swap({ fromAsset: "xlm", toAsset: "USDC:GA5Z....KZVN", amount: "50", type: "exactOut" });
+```
+
+### Await the result with `swapAsync`
+
+Use `swapAsync` when you want to `await` the submitted transaction — for example to deliver the proceeds to another account with tighter slippage and a memo:
+
+```tsx
+const { swapAsync } = useSwap();
+
+const tx = await swapAsync({
+  fromAsset: "USDC:GA5Z....KZVN",
+  toAsset: "xlm",
+  amount: "25",
+  to: "GB...DEST",
+  slippage: 0.01, // 1%
+  memo: "cash out",
+});
+
+console.log(tx.hash);
+```
+
+### Refresh balances on success
+
+Pass any TanStack Mutation options (`onSuccess`, `onError`, `onSettled`, …). A common pattern is refetching [`useBalances`](/react/hooks/use-balances) once the swap lands:
+
+<Tabs items={['index.tsx', 'config.ts']} defaultIndex={0}>
+<Tab value="index.tsx">
+```tsx
+import { useSwap, useBalances } from "@bluxcc/react";
+
+function SwapPanel() {
+  const { refetch } = useBalances();
+  const { swap, isPending } = useSwap({
+    onSuccess: () => refetch(), // pull fresh balances after the swap
+    onError: (error) => console.error(error.message),
+  });
+
+  return (
+    <button
+      onClick={() => swap({ fromAsset: "xlm", toAsset: "USDC:GA5Z....KZVN", amount: "100" })}
+      disabled={isPending}
+    >
+      Swap
+    </button>
+  );
+}
+```
+</Tab>
+<Tab value="config.ts">
+```tsx
+root.render(
+  <BluxProvider
+    config={{
+      appName: "MyApp",
+      networks: [networks.testnet, networks.mainnet],
+    }}
+  >
+    <App />
+  </BluxProvider>
+);
+```
+</Tab>
+</Tabs>
+
+## Parameters
+
+`useSwap` takes an optional TanStack **Mutation options** object (`onSuccess`, `onError`, `onSettled`, `retry`, …). The `mutationFn` is provided by the hook — you don't supply it.
+
+The mutation **variables** — what you pass to `swap(...)` / `swapAsync(...)` — are the core [`SwapOptions`](/javascript/core/swap#type):
+
+| Field | Type | Default | Description |
+|---|---|---|---|
+| `fromAsset` | `string \| Asset` | — | **Required.** Asset being sold. |
+| `toAsset` | `string \| Asset` | — | **Required.** Asset being bought; must differ from `fromAsset`. |
+| `amount` | `string \| number \| bigint` | — | **Required.** Fixed amount in decimal units; meaning depends on `type`. |
+| `type` | `"exactIn" \| "exactOut"` | `"exactIn"` | Which side of the trade is fixed. |
+| `to` | `string` | connected account | Recipient of the bought asset. Omit for a self-swap. |
+| `slippage` | `number` | `0.005` | Max slippage as a fraction (`0.005` = 0.5%). |
+| `memo` | `string` | — | Optional text memo. |
+| `network` | `string` | active network | Network passphrase to swap on. |
+
+## Return Type
+
+The full TanStack mutation result, plus the two wagmi-style aliases:
+
+| Property | Type | Description |
+|---|---|---|
+| `swap` | `function` | Fire-and-forget alias of `mutate`. Call `swap({ … })`. |
+| `swapAsync` | `function` | Promise-returning alias of `mutateAsync`. `await swapAsync({ … })`. |
+| `mutate` / `mutateAsync` | `function` | The underlying TanStack mutators. |
+| `data` | `ISubmittedTransaction \| undefined` | The [submitted transaction](/javascript/usage/send-transaction#return-value) on success. |
+| `isPending` | `boolean` | A swap is in flight (building, signing, or submitting). |
+| `isSuccess` | `boolean` | The most recent swap succeeded. |
+| `isError` | `boolean` | The most recent swap failed. |
+| `error` | `Error \| null` | The error from the last failed swap. |
+| `reset` | `function` | Clear the mutation back to its idle state. |
+
+<Callout type="info">
+  A user must be connected before calling `swap` / `swapAsync` — the connected account is the source. Like every Blux write, it shows the confirmation modal before signing; handle rejection and validation failures via `onError` or a `try/catch` around `swapAsync`. See [`swap`](/javascript/core/swap#errors) for the full list of `BLUX:` errors.
+</Callout>
