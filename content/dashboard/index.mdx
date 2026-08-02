@@ -44,6 +44,8 @@ createConfig({
 
 Once your app is wired to an `appId`, every login flows through your dashboard project — so the users, analytics, access rules, and enabled social providers you see there all apply to your live app.
 
+For backend integrations, your project also has an **App Secret**. It authenticates server-to-server requests that list or look up users and verify wallet ownership. Keep it out of browser code, mobile apps, and source control. See [Server API authentication](/api/authentication) for setup and examples.
+
 <Callout type="info">
   The model is similar to other auth platforms: log in, grab your App ID, drop it into your config, and manage the rest from the dashboard — no redeploy needed for most changes.
 </Callout>

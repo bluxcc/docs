@@ -1,0 +1,114 @@
+---
+title: Verify a Wallet
+description: Confirm that a public address belongs to a user who authenticated with your Blux project.
+---
+
+import { Callout } from 'fumadocs-ui/components/callout';
+
+## Verify an address
+
+```http
+POST /server/wallets/verify
+```
+
+Checks whether a public address belongs to a current user of the authenticated project. The route checks both:
+
+- Custodial accounts provisioned by Blux.
+- An external wallet address used to log in.
+
+This protects backend operations from a caller who simply claims to own an address that never came through your project's Blux login flow.
+
+### Request body
+
+| Field | Type | Required | Description |
+|---|---|---|---|
+| `address` | string | Yes | A Stellar account (`G...`) or Ethereum address (`0x...`). |
+| `user_id` | integer | No | Require the address to belong to this specific Blux user. |
+
+Verify an address anywhere in the project:
+
+```bash
+curl --request POST \
+  --url 'https://api.blux.cc/server/wallets/verify' \
+  --header 'content-type: application/json' \
+  --header "blux-app-id: $BLUX_APP_ID" \
+  --header "blux-app-secret: $BLUX_APP_SECRET" \
+  --data '{
+    "address": "GBLUXDDBTGCLIC3TYAFYUJ5EO2MPXBSFMU7GHNLQ6IZWEJVXWMLBLUXX"
+  }'
+```
+
+Pin the check to the user your application already authenticated or looked up:
+
+```json
+{
+  "address": "GBLUXDDBTGCLIC3TYAFYUJ5EO2MPXBSFMU7GHNLQ6IZWEJVXWMLBLUXX",
+  "user_id": 42
+}
+```
+
+<Callout type="info">
+  Prefer a pinned check when your application is authorizing an action for a known user. Without `user_id`, a positive result only proves that the address belongs to some user in the project.
+</Callout>
+
+### Positive result
+
+The route returns `200` with `exists: true` and information about the match:
+
+```json
+{
+  "message": "...",
+  "result": {
+    "exists": true,
+    "user_id": 42,
+    "network": "stellar",
+    "wallet_type": "custodial",
+    "auth_method": "email"
+  }
+}
+```
+
+| Field | Description |
+|---|---|
+| `exists` | Whether the address matched a non-deleted project user and, when supplied, the requested `user_id`. |
+| `user_id` | ID of the user who owns the matching address. |
+| `network` | Address network, currently `stellar` or `ethereum`. |
+| `wallet_type` | `custodial` for a Blux-provisioned account or `external` for the user's own login wallet. |
+| `auth_method` | How the matched user signs in, such as `email`, `passkey`, `wallet`, or a social provider. |
+
+### Negative result
+
+A well-formed address that does not match is not an API error. The route returns `200` with `result.exists` set to `false`. Treat `exists` as the authoritative verification decision; do not infer success from the HTTP status alone.
+
+Malformed or missing addresses return `400`. Missing or invalid project credentials return `401`.
+
+## Backend authorization pattern
+
+Wallet verification should be one part of your backend's authorization decision:
+
+```ts
+const response = await fetch("https://api.blux.cc/server/wallets/verify", {
+  method: "POST",
+  headers: {
+    "content-type": "application/json",
+    "blux-app-id": process.env.BLUX_APP_ID!,
+    "blux-app-secret": process.env.BLUX_APP_SECRET!,
+  },
+  body: JSON.stringify({ address, user_id: bluxUserId }),
+});
+
+if (!response.ok) {
+  const { error } = await response.json();
+  throw new Error(`Wallet verification failed: ${error}`);
+}
+
+const { result } = await response.json();
+
+if (!result.exists) {
+  throw new Error("This wallet is not linked to the Blux user");
+}
+
+// Continue with the protected operation.
+```
+
+Also authenticate the caller to your own backend and ensure they are allowed to act as `bluxUserId`. Possessing or guessing a user ID must never be enough to authorize an operation.

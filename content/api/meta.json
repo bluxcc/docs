@@ -1,0 +1,5 @@
+{
+  "title": "Server API",
+  "defaultOpen": true,
+  "pages": ["index", "authentication", "users", "verify-wallet"]
+}

@@ -1,0 +1,84 @@
+---
+title: Server API
+description: Use your App Secret from a trusted backend to work with your Blux project and its users.
+---
+
+import { Callout } from 'fumadocs-ui/components/callout';
+import { Card, Cards } from 'fumadocs-ui/components/card';
+
+The Blux Server API lets a trusted backend interact with a project directly. Use it to retrieve project users, search for a user, remove a user, or verify that a wallet address really belongs to someone who signed in to your project through Blux.
+
+These endpoints are independent of `@bluxcc/react` and `@bluxcc/core`. They are ordinary HTTPS endpoints and can be called from any backend language or framework.
+
+<Callout type="error">
+  Your App Secret is a server-side credential. Never put it in frontend JavaScript, a mobile app, a public repository, a URL, or logs. A browser-visible environment variable is not secret, even if your build tool calls it an environment variable.
+</Callout>
+
+## Base URL
+
+```text
+https://api.blux.cc
+```
+
+All requests and responses use JSON. Successful responses use either a `message` field or a `message` and `result` envelope. Errors use an `error` field.
+
+## Quick start
+
+Copy your project's App ID and App Secret from the [Blux Dashboard](https://dashboard.blux.cc), store them in your backend's secret manager or private environment, and send them as request headers:
+
+```bash
+curl --request GET \
+  --url 'https://api.blux.cc/server/users?limit=20' \
+  --header "blux-app-id: $BLUX_APP_ID" \
+  --header "blux-app-secret: $BLUX_APP_SECRET"
+```
+
+The same request with Node.js:
+
+```ts
+const response = await fetch("https://api.blux.cc/server/users?limit=20", {
+  headers: {
+    "blux-app-id": process.env.BLUX_APP_ID!,
+    "blux-app-secret": process.env.BLUX_APP_SECRET!,
+  },
+});
+
+if (!response.ok) {
+  const { error } = await response.json();
+  throw new Error(`Blux API error (${response.status}): ${error}`);
+}
+
+const { result } = await response.json();
+console.log(result.users);
+```
+
+<Cards>
+  <Card
+    title="App Secret & authentication"
+    href="/api/authentication"
+    description="Store the credential safely and authenticate with headers or HTTP Basic auth."
+  />
+  <Card
+    title="Users"
+    href="/api/users"
+    description="List, count, search, retrieve, and delete your project's users."
+  />
+  <Card
+    title="Verify a wallet"
+    href="/api/verify-wallet"
+    description="Confirm that an address belongs to a real user of your project."
+  />
+</Cards>
+
+## Routes
+
+| Method | Route | Purpose |
+|---|---|---|
+| `GET` | `/server/users` | List users with filters and pagination. |
+| `GET` | `/server/users/count` | Count users with the same optional filters. |
+| `GET` | `/server/users/search` | Find users by exact email or public address. |
+| `GET` | `/server/users/{user_id}` | Retrieve one user by ID. |
+| `DELETE` | `/server/users/{user_id}` | Remove one user from the project. |
+| `POST` | `/server/wallets/verify` | Verify wallet ownership, optionally for a specific user. |
+
+For the live machine-readable contract, see the [`server` section in Swagger](https://api.blux.cc/swagger/index.html).

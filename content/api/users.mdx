@@ -1,0 +1,191 @@
+---
+title: Users
+description: List, count, search, retrieve, and delete users with the Server API.
+---
+
+import { Callout } from 'fumadocs-ui/components/callout';
+
+The user routes operate only on users of the project identified by your Server API credentials. User responses include public account addresses but never private keys or other wallet secrets.
+
+## User object
+
+Routes that return users use this shape:
+
+```json
+{
+  "id": 42,
+  "auth_method": "email",
+  "auth_value": "person@example.com",
+  "wallet": "...",
+  "created_at": "2026-08-01T12:00:00Z",
+  "last_login": "2026-08-03T09:30:00Z",
+  "login_count": 4,
+  "accounts": [
+    {
+      "id": 91,
+      "network": "stellar",
+      "public_key": "G..."
+    }
+  ]
+}
+```
+
+| Field | Description |
+|---|---|
+| `id` | Blux user ID within the API. Use it with the single-user and pinned verification routes. |
+| `auth_method` | How the user authenticated, such as `email`, `passkey`, `wallet`, or a social provider. |
+| `auth_value` | The identifier associated with the authentication method. |
+| `wallet` | Wallet value recorded for the user, when applicable. |
+| `created_at` | When the user was created. |
+| `last_login` | The user's most recent login time. |
+| `login_count` | Number of recorded logins. |
+| `accounts` | Public accounts linked to the user. Each entry contains an account `id`, `network`, and `public_key`. |
+
+## List users
+
+```http
+GET /server/users
+```
+
+Returns the project's users newest first, with optional filtering and pagination.
+
+### Query parameters
+
+| Parameter | Type | Required | Description |
+|---|---|---|---|
+| `start_date` | string | No | Include users created on or after this date. Accepts `YYYY-MM-DD` or RFC 3339. |
+| `end_date` | string | No | Include users created on or before this date. Accepts `YYYY-MM-DD` or RFC 3339. |
+| `login_method` | string | No | Filter by `wallet`, `socials`, `passkey`, or `email`. Send comma-separated values, repeat the parameter, or combine both forms. |
+| `page` | integer | No | Page number. Defaults to `1`. |
+| `limit` | integer | No | Users per page. Defaults to `10`; maximum `100`. |
+
+```bash
+curl --get 'https://api.blux.cc/server/users' \
+  --header "blux-app-id: $BLUX_APP_ID" \
+  --header "blux-app-secret: $BLUX_APP_SECRET" \
+  --data-urlencode 'start_date=2026-08-01' \
+  --data-urlencode 'login_method=email,wallet' \
+  --data-urlencode 'page=1' \
+  --data-urlencode 'limit=25'
+```
+
+The `result` contains the current page and total count:
+
+```json
+{
+  "message": "...",
+  "result": {
+    "page": 1,
+    "limit": 25,
+    "total_user": 137,
+    "users": []
+  }
+}
+```
+
+An invalid date, login method, page, or limit returns `400`.
+
+## Count users
+
+```http
+GET /server/users/count
+```
+
+Returns a count without fetching user records. It accepts the same `start_date`, `end_date`, and `login_method` filters as the list route, which makes it useful for metrics and filtered totals.
+
+```bash
+curl --get 'https://api.blux.cc/server/users/count' \
+  --header "blux-app-id: $BLUX_APP_ID" \
+  --header "blux-app-secret: $BLUX_APP_SECRET" \
+  --data-urlencode 'start_date=2026-08-01T00:00:00Z' \
+  --data-urlencode 'login_method=socials'
+```
+
+```json
+{
+  "message": "...",
+  "result": {
+    "total_user": 37
+  }
+}
+```
+
+## Search users
+
+```http
+GET /server/users/search
+```
+
+Search by an exact login email or by a public address. You must provide exactly one search parameter.
+
+| Parameter | Type | Required | Description |
+|---|---|---|---|
+| `email` | string | One of the two | Exact, case-insensitive login email. |
+| `address` | string | One of the two | Stellar `G...` or Ethereum `0x...` address. Searches Blux-provisioned custodial accounts and external wallet login addresses. |
+
+```bash
+curl --get 'https://api.blux.cc/server/users/search' \
+  --header "blux-app-id: $BLUX_APP_ID" \
+  --header "blux-app-secret: $BLUX_APP_SECRET" \
+  --data-urlencode 'email=person@example.com'
+```
+
+```json
+{
+  "message": "...",
+  "result": {
+    "total_user": 1,
+    "users": []
+  }
+}
+```
+
+The route returns every match because one email can be associated with more than one Blux user, such as separate email and social logins. No match is a successful `200` response with `total_user: 0` and an empty `users` array. Supplying both parameters or neither returns `400`.
+
+<Callout type="info">
+  Use [wallet verification](/api/verify-wallet) when an address is a security decision, such as granting access. Search finds records; verification is explicitly designed to establish that the address came from a real Blux login for your project.
+</Callout>
+
+## Get one user
+
+```http
+GET /server/users/{user_id}
+```
+
+Retrieves one user and their public accounts. `user_id` must be an integer and the user must belong to the authenticated project.
+
+```bash
+curl --request GET \
+  --url 'https://api.blux.cc/server/users/42' \
+  --header "blux-app-id: $BLUX_APP_ID" \
+  --header "blux-app-secret: $BLUX_APP_SECRET"
+```
+
+The response places the [user object](#user-object) in `result`. An invalid ID returns `400`; an unknown user or a user from another project returns `404`.
+
+## Delete one user
+
+```http
+DELETE /server/users/{user_id}
+```
+
+Removes the user from the project, equivalent to the dashboard's remove-user action.
+
+```bash
+curl --request DELETE \
+  --url 'https://api.blux.cc/server/users/42' \
+  --header "blux-app-id: $BLUX_APP_ID" \
+  --header "blux-app-secret: $BLUX_APP_SECRET"
+```
+
+```json
+{
+  "message": "..."
+}
+```
+
+<Callout type="warn">
+  Deleting is not banning. A deleted user can register again later. Use the dashboard's ban action when future logins from that identity must be blocked, and require your own backend authorization before exposing deletion to an operator or user.
+</Callout>
+
+An invalid ID returns `400`; an unknown user or a user from another project returns `404`.

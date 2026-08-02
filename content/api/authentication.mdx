@@ -1,0 +1,104 @@
+---
+title: App Secret & Authentication
+description: Authenticate Server API calls without exposing your project's App Secret.
+---
+
+import { Callout } from 'fumadocs-ui/components/callout';
+import { Tab, Tabs } from 'fumadocs-ui/components/tabs';
+
+Every Server API request must identify a project with its **App ID** and authenticate with that project's **App Secret**. Both values are available from your project in the [Blux Dashboard](https://dashboard.blux.cc).
+
+The App ID identifies the project and can also appear in client configuration. The App Secret grants backend access and must remain private.
+
+## Header authentication
+
+Sending the two Blux headers is the recommended and most explicit option:
+
+```http
+blux-app-id: your-app-id
+blux-app-secret: your-app-secret
+```
+
+<Tabs items={['cURL', 'Node.js']} defaultIndex={0}>
+<Tab value="cURL">
+```bash
+curl --request GET \
+  --url 'https://api.blux.cc/server/users/count' \
+  --header "blux-app-id: $BLUX_APP_ID" \
+  --header "blux-app-secret: $BLUX_APP_SECRET"
+```
+</Tab>
+<Tab value="Node.js">
+```ts
+const response = await fetch("https://api.blux.cc/server/users/count", {
+  headers: {
+    "blux-app-id": process.env.BLUX_APP_ID!,
+    "blux-app-secret": process.env.BLUX_APP_SECRET!,
+  },
+});
+```
+</Tab>
+</Tabs>
+
+## HTTP Basic authentication
+
+The API also accepts HTTP Basic authentication. Use the App ID as the username and the App Secret as the password:
+
+```bash
+curl --request GET \
+  --url 'https://api.blux.cc/server/users/count' \
+  --user "$BLUX_APP_ID:$BLUX_APP_SECRET"
+```
+
+This sends `Authorization: Basic <base64(app-id:app-secret)>`. Base64 is an encoding, not encryption, so always call the API over HTTPS.
+
+## Secret handling
+
+- Load the App Secret from a server-side secret manager or private environment variable.
+- Restrict access to the production secret to the services that need it.
+- Keep request headers out of application, proxy, and error logs.
+- Use separate credentials for separate Blux projects and environments.
+- Rotate the App Secret from the dashboard if it is exposed, then update the backend's stored value.
+
+<Callout type="warn">
+  Do not proxy arbitrary client-supplied paths or methods to the Server API. Expose narrow backend operations with your own authorization checks, especially for `DELETE /server/users/{user_id}`.
+</Callout>
+
+## Responses and errors
+
+Successful responses that return data have a common envelope:
+
+```json
+{
+  "message": "...",
+  "result": {}
+}
+```
+
+Operations without a result return:
+
+```json
+{
+  "message": "..."
+}
+```
+
+Errors return:
+
+```json
+{
+  "error": "..."
+}
+```
+
+Handle responses by HTTP status before reading the payload:
+
+| Status | Meaning |
+|---|---|
+| `200` | The request completed. For wallet verification, inspect `result.exists`; a valid negative check is still `200`. |
+| `400` | A path, query, filter, or request body is invalid. |
+| `401` | The App ID or App Secret is missing or invalid. |
+| `404` | The requested user does not exist in this project. Only the single-user routes return this status. |
+| `500` | Blux could not complete the request. |
+
+For `500` responses, avoid automatic unbounded retries. Retry only idempotent reads with backoff; do not automatically retry a delete unless your application can confirm the desired final state.

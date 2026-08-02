@@ -85,7 +85,7 @@ const swap: (options: SwapOptions) => Promise<ISubmittedTransaction>;
 | Slippage guardrail | `destMin` — the least you'll accept | `sendMax` — the most you'll spend |
 | Underlying operation | [`pathPaymentStrictSend`](/javascript/core/getStrictSendPaths) | [`pathPaymentStrictReceive`](/javascript/core/getStrictReceivePaths) |
 
-In both cases Blux discovers the best available route (including any intermediary hops) and embeds it in the operation, so you never assemble the path yourself.
+In both cases Blux discovers the best available route and embeds it in the operation, so you never assemble the path yourself. Routes of at most 3 assets (one intermediary hop) are preferred — some Horizon nodes reject path payments with longer chains — and a longer route is only used when no shorter one exists, in which case submission relies on your configured Horizon node accepting it.
 
 ## Slippage
 
@@ -222,7 +222,8 @@ interface ISubmittedTransaction {
 | `BLUX: The logged-in account is not active on this network yet.` | The source account isn't funded on this network. |
 | `BLUX: The destination account does not exist; a swap cannot create it.` | `to` points at an account that hasn't been created. |
 | `BLUX: The destination has no trustline for <CODE>.` | A non-self destination doesn't trust `toAsset`. |
-| `BLUX: No swap path found from <CODE> to <CODE>.` | No route exists between the two assets right now. |
+| `BLUX: No swap path found from <CODE> to <CODE> — the <CODE> issuer <G…> could not be found on <network>; is it an asset from a different network?` | The issuer account does not exist on the network being queried — usually a mainnet issuer used on testnet or vice versa. |
+| `BLUX: No swap path found from <CODE[:ISSUER]> to <CODE[:ISSUER]> on <network> — no route can fill this amount right now.` | Both assets exist, but no route (or not enough liquidity for this amount) exists between them right now. |
 
 Errors raised while signing and submitting (`BLUX: User is not authenticated.`, network busy, on-chain failure, …) propagate unchanged from [`sendTransaction`](/javascript/usage/send-transaction#errors).
 
