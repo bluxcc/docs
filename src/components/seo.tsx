@@ -23,6 +23,12 @@ export interface SeoProps {
   noindex?: boolean;
 }
 
+/** Markdown URL agents should fetch instead of the HTML page. */
+export function toMarkdownUrl(url: string): string {
+  const path = !url || url === "/" ? "" : url.replace(/\/$/, "");
+  return `${SITE_URL}/llms.mdx${path}/content.md`;
+}
+
 /**
  * Per-page document metadata (title + Open Graph + Twitter card).
  *
@@ -34,10 +40,7 @@ export function Seo({ title, description, path, noindex }: SeoProps) {
   const pageTitle = title ? `${SITE_NAME} - ${title}` : SITE_NAME;
   const desc = description ?? SITE_DESCRIPTION;
   const url = path ? `${SITE_URL}${path}` : SITE_URL;
-  const markdownHref =
-    !path || path === "/"
-      ? `${SITE_URL}/llms.mdx`
-      : `${SITE_URL}/llms.mdx${path}`;
+  const markdownHref = toMarkdownUrl(path ?? "/");
 
   return (
     <>

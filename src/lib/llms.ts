@@ -1,6 +1,6 @@
 import { readFile } from "node:fs/promises";
 import type { InferPageType } from "fumadocs-core/source";
-import { SITE_DESCRIPTION, SITE_URL } from "@/components/seo";
+import { SITE_DESCRIPTION, SITE_URL, toMarkdownUrl } from "@/components/seo";
 import { source } from "@/lib/source";
 
 export type DocsPage = InferPageType<typeof source>;
@@ -34,15 +34,6 @@ function toAbsoluteUrl(url: string): string {
   }
 
   return `${SITE_URL}${url}`;
-}
-
-/** Markdown URL agents should fetch instead of the HTML page. */
-export function toMarkdownUrl(url: string): string {
-  if (!url || url === "/") {
-    return `${SITE_URL}/llms.mdx`;
-  }
-
-  return `${SITE_URL}/llms.mdx${url}`;
 }
 
 function pagesByUrl(): Map<string, DocsPage> {
