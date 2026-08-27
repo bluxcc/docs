@@ -1,0 +1,44 @@
+---
+title: Changelog
+description: Release notes for @bluxcc/core and @bluxcc/react. Both packages ship at the same version.
+---
+
+import { Tab, Tabs } from 'fumadocs-ui/components/tabs';
+
+`@bluxcc/core` and `@bluxcc/react` are released together. Every version below applies to both packages — pick the one that matches your stack.
+
+Newest releases are at the top.
+
+---
+
+## v0.3.0
+
+August 27, 2026 · [GitHub (core)](https://github.com/bluxcc/core/releases/tag/v0.3.0) · [GitHub (react)](https://github.com/bluxcc/react/releases/tag/v0.3.0)
+
+<Tabs items={['React', 'JavaScript']} defaultIndex={0}>
+<Tab value="React">
+```bash
+npm i @bluxcc/react@^0.3.0
+```
+</Tab>
+<Tab value="JavaScript">
+```bash
+npm i @bluxcc/core@^0.3.0
+```
+</Tab>
+</Tabs>
+
+### Added
+
+- Added Turkish language support.
+
+### Changed
+
+- Replaced SEP-10 transaction signing with message signing for wallet authentication.
+- Updated the login flow for Freighter, Rabet, Albedo, Bitget, Hana, HOT, OneKey, and xBull.
+
+### Fixed
+
+- Fixed Freighter’s inactive-account warning during authentication.
+- Fixed login failures related to rejecting the Privacy Policy or Terms and Conditions.
+- Fixed modals disappearing when users scroll down.

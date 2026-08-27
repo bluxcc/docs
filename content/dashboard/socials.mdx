@@ -16,8 +16,8 @@ Social login is a **two-step** setup:
 
 ```ts
 createConfig({
-  appName: "MyApp",
   appId: "your-app-id",
+  networks: [core.networks.mainnet],
   loginMethods: ["google", "meta", "github", "email"],
 });
 ```

@@ -6,9 +6,10 @@
  * served from a different origin. `OG_IMAGE` is a single static image shared by
  * every page — swap in a dedicated 1200×630 banner here for richer previews.
  */
-export const SITE_URL = 'https://docs.blux.cc';
-export const SITE_NAME = 'BLUX';
-export const SITE_DESCRIPTION = 'The complete wallet infrastructure for Stellar dApps.';
+export const SITE_URL = "https://docs.blux.cc";
+export const SITE_NAME = "BLUX";
+export const SITE_DESCRIPTION =
+  "The complete wallet infrastructure for Stellar dApps.";
 export const OG_IMAGE = `${SITE_URL}/favicon.png`;
 
 export interface SeoProps {
@@ -33,12 +34,22 @@ export function Seo({ title, description, path, noindex }: SeoProps) {
   const pageTitle = title ? `${SITE_NAME} - ${title}` : SITE_NAME;
   const desc = description ?? SITE_DESCRIPTION;
   const url = path ? `${SITE_URL}${path}` : SITE_URL;
+  const markdownHref =
+    !path || path === "/"
+      ? `${SITE_URL}/llms.mdx`
+      : `${SITE_URL}/llms.mdx${path}`;
 
   return (
     <>
       <title>{pageTitle}</title>
       <meta name="description" content={desc} />
       <link rel="canonical" href={url} />
+      <link
+        rel="alternate"
+        type="text/markdown"
+        title="LLM"
+        href={markdownHref}
+      />
       {noindex && <meta name="robots" content="noindex, nofollow" />}
 
       {/* Open Graph */}

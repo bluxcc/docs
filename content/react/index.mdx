@@ -36,7 +36,7 @@ Install the Blux React SDK using your package manager of choice:
 
 ## Setup
 
-Wrap your app with `BluxProvider` to give any component access to the Blux SDK. Place it as close to the root of your application as possible.
+Wrap your app with `BluxProvider` to give any component access to the Blux SDK. Place it as close to the root of your application as possible. The only required options are `appId` and `networks`.
 
 <Tabs items={['Next.js', 'Vite / CRA']} defaultIndex={0}>
   <Tab value="Next.js">
@@ -49,9 +49,8 @@ Wrap your app with `BluxProvider` to give any component access to the Blux SDK. 
       return (
         <BluxProvider
           config={{
-            appName: "MyApp",
-            networks: [networks.testnet, networks.mainnet],
-            defaultNetwork: networks.mainnet,
+            appId: "your-app-id",
+            networks: [networks.mainnet],
           }}
         >
           {children}
@@ -73,9 +72,8 @@ Wrap your app with `BluxProvider` to give any component access to the Blux SDK. 
       <React.StrictMode>
         <BluxProvider
           config={{
-            appName: "MyApp",
-            networks: [networks.testnet, networks.mainnet],
-            defaultNetwork: networks.mainnet,
+            appId: "your-app-id",
+            networks: [networks.mainnet],
           }}
         >
           <App />
@@ -85,4 +83,30 @@ Wrap your app with `BluxProvider` to give any component access to the Blux SDK. 
 ```
   </Tab>
 </Tabs>
+
+## Use it
+
+Call `useBlux` from any child of `BluxProvider` to open the built-in modals.
+
+```tsx
+import { useBlux } from "@bluxcc/react";
+
+function ConnectButton() {
+  const { login, isAuthenticated } = useBlux();
+
+  return (
+    <button onClick={login}>
+      {isAuthenticated ? "Connected" : "Connect"}
+    </button>
+  );
+}
+```
+
+<Cards>
+  {getPageTreePeers(source.getPageTree(), '/react').map((peer) => (
+    <Card key={peer.url} title={peer.name} href={peer.url}>
+      {peer.description}
+    </Card>
+  ))}
+</Cards>
 

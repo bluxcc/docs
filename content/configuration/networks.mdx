@@ -29,7 +29,7 @@ import { core } from "@bluxcc/core";
 ```tsx
 <BluxProvider
   config={{
-    appName: "MyApp",
+    appId: "your-app-id",
     networks: [networks.mainnet, networks.testnet],
     defaultNetwork: networks.mainnet,
   }}
@@ -43,7 +43,7 @@ import { core } from "@bluxcc/core";
 import { core } from "@bluxcc/core";
 
 createConfig({
-  appName: "My App",
+  appId: "your-app-id",
   networks: [core.networks.mainnet, core.networks.testnet],
   defaultNetwork: core.networks.mainnet,
 });
@@ -64,7 +64,7 @@ If you need a network not in the built-in list, define it as a string and pass i
 const customNetwork = "Standalone Network ; February 2020";
 
 createConfig({
-  appName: "MyApp",
+  appId: "your-app-id",
   networks: [customNetwork],
 });
 ```

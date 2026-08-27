@@ -34,7 +34,7 @@ Install the Blux core SDK using your package manager of choice:
 
 ## Setup
 
-Call `createConfig` once at the entry point of your application to initialize Blux. Do not call it more than once.
+Call `createConfig` once at the entry point of your application to initialize Blux. Do not call it more than once. The only required options are `appId` and `networks`.
 
 <Tabs items={['ESM', 'CJS', 'HTML (CDN)']} defaultIndex={0}>
   <Tab value="ESM">
@@ -42,8 +42,8 @@ Call `createConfig` once at the entry point of your application to initialize Bl
     import { createConfig, core } from "@bluxcc/core";
 
     createConfig({
-      appName: "My App",
-      networks: [core.networks.mainnet, core.networks.testnet],
+      appId: "your-app-id",
+      networks: [core.networks.mainnet],
     });
 ```
   </Tab>
@@ -52,8 +52,8 @@ Call `createConfig` once at the entry point of your application to initialize Bl
     const { createConfig, core } = require("@bluxcc/core");
 
     createConfig({
-      appName: "My App",
-      networks: [core.networks.mainnet, core.networks.testnet],
+      appId: "your-app-id",
+      networks: [core.networks.mainnet],
     });
 ```
   </Tab>
@@ -63,10 +63,28 @@ Call `createConfig` once at the entry point of your application to initialize Bl
 
     <script>
       Blux.createConfig({
-        appName: "My App",
-        networks: [Blux.core.networks.mainnet, Blux.core.networks.testnet],
+        appId: "your-app-id",
+        networks: [Blux.core.networks.mainnet],
       });
     </script>
 ```
   </Tab>
 </Tabs>
+
+## Use it
+
+After `createConfig`, open the built-in modals from the `blux` object.
+
+```ts
+import { blux } from "@bluxcc/core";
+
+blux.login();
+```
+
+<Cards>
+  {getPageTreePeers(source.getPageTree(), '/javascript').map((peer) => (
+    <Card key={peer.url} title={peer.name} href={peer.url}>
+      {peer.description}
+    </Card>
+  ))}
+</Cards>

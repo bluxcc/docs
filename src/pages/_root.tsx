@@ -1,6 +1,6 @@
-import type { ReactNode } from 'react';
-import { Provider } from '@/components/provider';
-import '@/styles/globals.css';
+import type { ReactNode } from "react";
+import { Provider } from "@/components/provider";
+import "@/styles/globals.css";
 
 type RootElementProps = {
   children: ReactNode;
@@ -33,6 +33,18 @@ export default function RootElement({ children }: RootElementProps) {
         />
 
         <link rel="canonical" href="https://docs.blux.cc/" />
+        <link
+          rel="alternate"
+          type="text/markdown"
+          title="LLM"
+          href="https://docs.blux.cc/llms.txt"
+        />
+        <link
+          rel="alternate"
+          type="text/markdown"
+          title="LLM (full)"
+          href="https://docs.blux.cc/llms-full.txt"
+        />
         <link rel="icon" href="/favicon.png" />
         <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
         <link rel="manifest" href="/site.webmanifest" />
@@ -57,7 +69,10 @@ export default function RootElement({ children }: RootElementProps) {
           name="twitter:description"
           content="Learn how to integrate Blux authentication, wallets, SDKs, and APIs."
         />
-        <meta name="twitter:image" content="https://docs.blux.cc/og-image.png" />
+        <meta
+          name="twitter:image"
+          content="https://docs.blux.cc/og-image.png"
+        />
         <meta name="twitter:creator" content="@bluxcc" />
 
         <meta name="format-detection" content="telephone=no" />
@@ -72,5 +87,5 @@ export default function RootElement({ children }: RootElementProps) {
 
 export const getConfig = async () =>
   ({
-    render: 'static',
+    render: "static",
   }) as const;

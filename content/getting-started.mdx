@@ -13,7 +13,7 @@ The flow looks like this:
 
 1. **Create an app in the Dashboard** and grab your App ID.
 2. **Pick a package** — React or core (vanilla JS) — and install it.
-3. **Initialize Blux** with `createConfig` / `BluxProvider`, passing your App ID.
+3. **Initialize Blux** with `createConfig` / `BluxProvider`, passing your App ID and a network.
 4. **Customize** appearance, login methods, language, and wallets in the config.
 5. **Use it** — open the built-in modals (`login`, `fundMe`, `profile`) or call the data hooks/functions.
 
@@ -49,7 +49,7 @@ npm install @bluxcc/core
 
 ## 3. Initialize Blux
 
-Wrap your app with `BluxProvider` (React) or call `createConfig` once at startup (vanilla JS). Pass your `appId` so the integration is tied to your dashboard project.
+Wrap your app with `BluxProvider` (React) or call `createConfig` once at startup (vanilla JS). The only required options are `appId` and `networks`.
 
 <Tabs items={['React', 'Vanilla JS']} defaultIndex={0}>
 <Tab value="React">
@@ -58,7 +58,6 @@ import { networks, BluxProvider } from "@bluxcc/react";
 
 <BluxProvider
   config={{
-    appName: "MyApp",
     appId: "your-app-id",
     networks: [networks.mainnet],
   }}
@@ -72,7 +71,6 @@ import { networks, BluxProvider } from "@bluxcc/react";
 import { createConfig, core } from "@bluxcc/core";
 
 createConfig({
-  appName: "MyApp",
   appId: "your-app-id",
   networks: [core.networks.mainnet],
 });
@@ -95,8 +93,8 @@ Add the methods you want to the `loginMethods` array — order determines displa
 
 ```ts
 createConfig({
-  appName: "MyApp",
   appId: "your-app-id",
+  networks: [core.networks.mainnet],
   loginMethods: ["wallet", "email", "passkey", "google", "meta"],
 });
 ```
