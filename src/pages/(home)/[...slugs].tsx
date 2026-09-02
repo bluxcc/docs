@@ -1,8 +1,8 @@
+import { Seo, SITE_URL } from '@/components/seo';
 import { source } from '@/lib/source';
-import { PageProps } from 'waku/router';
+import type { PageProps } from 'waku/router';
 import defaultMdxComponents from 'fumadocs-ui/mdx';
 import { DocsBody, DocsDescription, DocsPage, DocsTitle } from 'fumadocs-ui/layouts/docs/page';
-import { Seo } from '@/components/seo';
 
 export default function DocPage({ slugs }: PageProps<'/[...slugs]'>) {
   const page = source.getPage(slugs);
@@ -28,9 +28,18 @@ export default function DocPage({ slugs }: PageProps<'/[...slugs]'>) {
   }
 
   const MDX = page.data.body;
+  const version = page.url === '/changelog' ? page.data.version : undefined;
+  const ogImage = version
+    ? `${SITE_URL}/og/changelog.svg?version=${encodeURIComponent(version)}`
+    : undefined;
   return (
     <>
-      <Seo title={page.data.title} description={page.data.description} path={page.url} />
+      <Seo
+        title={page.data.title}
+        description={page.data.description}
+        path={page.url}
+        image={ogImage}
+      />
       <DocsPage toc={page.data.toc}>
         <DocsTitle>{page.data.title}</DocsTitle>
         <DocsDescription>{page.data.description}</DocsDescription>
