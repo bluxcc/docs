@@ -7,9 +7,16 @@ import { Card, Cards } from 'fumadocs-ui/components/card';
 import { getPageTreePeers } from 'fumadocs-core/page-tree';
 import { source } from '@/lib/source';
 
-Blux provides two categories of React hooks: hooks for **managing wallet state** (authentication, network, transactions) and hooks for **querying Stellar network data** (accounts, balances, trades, and more).
+Blux provides hooks for **white-label authentication**, **managing wallet state** (network and transactions), and **querying Stellar network data** (accounts, balances, trades, and more).
+
+Use `useLoginEmail`, `useLoginSms`, `useLoginOAuth`, `useLoginPasskey`, and `useLoginWallet` to build your own login screen. See the [white-label login guide](/react/usage/white-label-login) for complete examples.
 
 All data-fetching hooks are built on [TanStack Query](https://tanstack.com/query/v5) and support the full suite of query options including caching, background refetching, pagination, and dependent queries.
+
+Hooks backed by a core address field accept the same `G…`, `M…`, `C…`, SEP-2,
+and `.xlm` values as the corresponding core function. Invalid and unregistered
+names surface through the query or mutation's `error`. See
+[address resolution and `.xlm` names](/javascript/core/address-resolution).
 
 ---
 

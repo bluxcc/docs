@@ -1,0 +1,113 @@
+---
+title: Address resolution and .xlm names
+description: Use G, M, and C addresses, SEP-2 federation addresses, or human-readable .xlm names throughout the Blux SDK.
+---
+
+import { Callout } from 'fumadocs-ui/components/callout';
+
+Every Blux core parameter that represents a Stellar account or Soroban contract
+uses the same address resolver. You can pass:
+
+- an account address (`G…`)
+- a muxed account address (`M…`) where the operation supports one
+- a contract address (`C…`)
+- a standard SEP-2 federation address such as `alice*example.com`
+- an XLM Domains name such as `alice.xlm` or `bot.team.xlm`
+
+```ts
+import { core } from "@bluxcc/core";
+
+await core.getAccount({ address: "alice.xlm" });
+await core.transfer({ to: "alice.xlm", amount: "10" });
+
+const { values } = await core.readContracts<[string]>([
+  {
+    address: "token.xlm", // may resolve to a C… contract
+    fn: "balance",
+    args: ["alice.xlm"],  // resolved because the ABI declares Address
+  },
+]);
+```
+
+Blux validates literal addresses locally. Names are resolved through SEP-2, and
+the returned record is validated again. An invalid name, an unregistered name,
+a record without an address, or the wrong kind of address causes the operation
+to reject before a transaction is built.
+
+## Mainnet and testnet
+
+<Callout type="info">
+  XLM Domains currently stores its registry on Stellar mainnet. Name resolution
+  is therefore independent of the `network` passed to a Blux function: the same
+  `.xlm` record is used for mainnet and testnet calls.
+</Callout>
+
+The resolved address is still used on the network you selected. For example,
+`alice.xlm` may resolve successfully to a mainnet `G…` account that has never
+been funded on testnet. In that case resolution succeeds, but a testnet account
+lookup or transaction fails under the normal testnet rules.
+
+## Resolve a name directly
+
+Use [`resolveXlmName`](/javascript/core/resolveXlmName) when you specifically
+want the normalized XLM Domains record, including its `.xlm` name, SEP-2 form,
+address kind, and optional memo. Use `resolveAddress` when you only need a
+validated address before calling another API:
+
+```ts
+const account = await core.resolveAddress("alice.xlm", {
+  expected: "account",
+});
+
+account.publicKey;  // base G… account
+account.destination; // G… or M… destination for a classic operation
+account.memo;        // optional SEP-2 memo
+
+const contract = await core.resolveAddress("token.xlm", {
+  expected: "contract",
+});
+
+contract.contractId; // C…
+```
+
+The `expected` option prevents an address from reaching an incompatible API:
+
+| Value | Accepted result |
+|---|---|
+| `"account"` (default) | `G…` or `M…`; returns the base `G…` as `publicKey` |
+| `"contract"` | `C…` only |
+| `"soroban"` | `G…` or `C…`; muxed accounts are rejected |
+
+Standard federation connection options such as `timeout` and `allowHttp` can be
+passed alongside `expected`.
+
+To find a name from a `G…` account instead, use
+[`resolveXlmNameByAddress`](/javascript/core/resolveXlmNameByAddress).
+
+## Where names work
+
+Account names work in `address`, `to`, `source`, `destination`, `forAccount`,
+`forSigner`, `forIssuer`, `claimant`, `sponsor`, and `seller` fields. Contract
+names work in contract-call `address` fields and token contract fields.
+
+For `readContracts` and `writeContract`, Blux also resolves strings nested in
+contract arguments whenever the deployed ABI declares that value as `Address`.
+This includes addresses inside options, vectors, tuples, maps, structs, and
+union cases. A string parameter that is not an ABI `Address` is left untouched,
+even if its text ends in `.xlm`.
+
+<Callout type="warn">
+  A `CODE:ISSUER` asset string is an asset identifier rather than an address
+  field. Continue using the issuer's `G…` key there, for example
+  `USDC:GA5Z…KZVN`.
+</Callout>
+
+## SEP-2 memos
+
+When a federation record includes a memo, `transfer` and `swap` automatically
+attach it to the classic transaction unless you explicitly pass your own
+`memo`. Soroban arguments and query filters use only the resolved address;
+federation memos do not apply to those fields.
+
+Learn more in the [XLM Domains integration documentation](https://www.xlm.domains/docs)
+and the Stellar ecosystem's [SEP-2 federation specification](https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0002.md).

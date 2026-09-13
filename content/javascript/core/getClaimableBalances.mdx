@@ -4,6 +4,8 @@ description: Fetch a paginated list of claimable balances using the Blux core SD
 ---
 
 The `getClaimableBalances` function returns a paginated list of claimable balances.
+Both `claimant` and `sponsor` accept `G…`, `M…`, SEP-2 federation, or `.xlm`
+names; see [address resolution](/javascript/core/address-resolution).
 
 The return value contains two properties:
 - `response` — the records you can use directly
@@ -19,9 +21,9 @@ export type CallBuilderOptions = {
 };
 
 type GetClaimableBalancesOptions = CallBuilderOptions & {
-  asset: Asset;
-  sponsor?: string;
-  claimant: string;
+  asset: AssetArg;
+  sponsor?: string; // G…/M…, SEP-2 address, or .xlm name
+  claimant: string; // G…/M…, SEP-2 address, or .xlm name
 };
 
 type GetClaimableBalancesResult = {
@@ -34,5 +36,8 @@ type GetClaimableBalancesResult = {
 ```typescript
 import { core } from "@bluxcc/core";
 
-const result = await core.getClaimableBalances({});
+const result = await core.getClaimableBalances({
+  asset: "xlm",
+  claimant: "alice.xlm",
+});
 ```

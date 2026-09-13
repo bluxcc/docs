@@ -8,7 +8,12 @@ import { Callout } from 'fumadocs-ui/components/callout';
 
 `useTokenMetadata` is the React wrapper around [`getTokenMetadata`](/javascript/core/getTokenMetadata). It reads a SEP-41 token / Stellar Asset Contract's `decimals`, `name`, `symbol`, and `owner` by simulating the contract's read-only entrypoints — **no account, signing, or fees** — and exposes the result as a TanStack Query, so you get caching, refetching, and loading states for free.
 
-The read works for any contract id, deployed or not yet funded. `owner` is `undefined` for contracts without an `owner()` function (notably Stellar Asset Contracts, which expose `admin()` instead). The query stays **disabled until a non-empty `address`** is provided, which makes it easy to chain after [`useSacAddress`](/react/hooks/use-sac-address).
+The read works for a `C…` contract id or `.xlm`/SEP-2 name resolving to one.
+`owner` is `undefined` for contracts without an `owner()` function (notably
+Stellar Asset Contracts, which expose `admin()` instead). The query stays
+**disabled until a non-empty `address`** is provided, which makes it easy to
+chain after [`useSacAddress`](/react/hooks/use-sac-address). Invalid or
+unregistered names surface through `error`; see [address resolution](/javascript/core/address-resolution).
 
 ## Import
 ```tsx
@@ -26,7 +31,7 @@ import { useTokenMetadata } from "@bluxcc/react";
 
 function TokenInfo() {
   const { data, isLoading, error } = useTokenMetadata(
-    "CB64D3G7SM2RTH6JSGG34DDTFTQ5CFDKVDZJZSODMCX4NJ2HV2KN7OG",
+    "token.xlm",
   );
 
   if (isLoading) return <p>Loading…</p>;

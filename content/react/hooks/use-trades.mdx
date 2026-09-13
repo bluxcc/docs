@@ -8,6 +8,9 @@ import { Callout } from 'fumadocs-ui/components/callout';
 
 The `useTrades` hook returns a paginated list of Stellar trades. All parameters are optional — called with no arguments it returns the latest trades from the network.
 
+`forAccount` accepts `G…`, `M…`, SEP-2 federation, or `.xlm`. See
+[address resolution](/javascript/core/address-resolution).
+
 ## Import
 ```tsx
 import { useTrades } from "@bluxcc/react";
@@ -113,7 +116,7 @@ root.render(
 ## Parameters
 
 ### `forAssetPair`
-`[base: Asset, counter: Asset] | undefined`
+`[base: AssetArg, counter: AssetArg] | undefined`
 
 Filter trades for a specific asset pair. Import `Asset` from `@bluxcc/react`.
 

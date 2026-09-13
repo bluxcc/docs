@@ -1,0 +1,50 @@
+---
+title: resolveXlmNameByAddress
+description: Find one verified XLM Domains name associated with a Stellar account.
+---
+
+import { Callout } from 'fumadocs-ui/components/callout';
+
+`resolveXlmNameByAddress` accepts a classic Stellar account address (`G…`) and
+returns one associated `.xlm` name. Blux forward-resolves the returned name and
+only returns it when it points back to the requested account.
+
+```ts
+import { resolveXlmNameByAddress } from "@bluxcc/core";
+
+const record = await resolveXlmNameByAddress("G...");
+
+console.log(record.name);      // "alice.xlm"
+console.log(record.publicKey); // original G… account
+```
+
+## Type
+
+```ts
+function resolveXlmNameByAddress(
+  address: string,
+  options?: XlmNameLookupOptions,
+): Promise<XlmAccountNameRecord>;
+```
+
+`XlmNameLookupOptions` supports `timeout` and `allowHttp`. The returned
+`XlmAccountNameRecord` has the same account fields documented for
+[`resolveXlmName`](/javascript/core/resolveXlmName#account-and-contract-records),
+with `kind: "account"` and a `publicKey`.
+
+<Callout type="info">
+  An account can own multiple names. The XLM Domains reverse lookup chooses one
+  record; this function does not return every name owned by the account.
+</Callout>
+
+## Errors
+
+The promise rejects when:
+
+- `address` is not a valid `G…` account address
+- the account has no reverse record
+- the returned record is malformed
+- the returned name does not resolve back to the requested account
+
+Contract addresses (`C…`) and muxed accounts (`M…`) are not supported by this
+lookup.

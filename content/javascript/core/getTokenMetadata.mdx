@@ -10,7 +10,7 @@ import { Callout } from 'fumadocs-ui/components/callout';
 `decimals`, `name`, and `symbol` come from the standard **SEP-41** token interface. `owner` is read separately and is omitted when the contract has no `owner()` function — notably **Stellar Asset Contracts**, which expose `admin()` rather than `owner()`.
 
 <Callout type="info">
-  `getTokenMetadata` must be called after `createConfig`, but the user does **not** need to be connected — it's a read-only simulation. Pass a token contract id (`C…`) such as a SAC from [`getSacAddress`](/javascript/core/getSacAddress).
+  `getTokenMetadata` must be called after `createConfig`, but the user does **not** need to be connected — it's a read-only simulation. Pass a token contract id (`C…`) or a `.xlm`/SEP-2 name resolving to one.
 </Callout>
 
 ## Type
@@ -44,7 +44,7 @@ const getTokenMetadata: (
 
 | Parameter | Type | Default | Description |
 |---|---|---|---|
-| `address` | `string` | — | **Required.** The token contract id (`C…`), e.g. a SAC from [`getSacAddress`](/javascript/core/getSacAddress). |
+| `address` | `string` | — | **Required.** A token contract id (`C…`) or `.xlm`/SEP-2 name resolving to one, e.g. a SAC from [`getSacAddress`](/javascript/core/getSacAddress). |
 | `options.network` | `string` | active network | Network passphrase to read from. |
 
 ## Usage
@@ -61,6 +61,15 @@ const metadata = await core.getTokenMetadata(
 console.log(metadata);
 // { decimals: 7, name: "USD Coin", symbol: "USDC", owner: "G..." }
 ```
+
+The contract can also be addressed by name:
+
+```ts
+const metadata = await core.getTokenMetadata("token.xlm");
+```
+
+Blux rejects the call if the name is unregistered or resolves to a `G…`
+account instead of a `C…` contract. See [address resolution](/javascript/core/address-resolution).
 
 ### Read a classic asset's metadata through its SAC
 
@@ -110,7 +119,8 @@ const metadata = await core.getTokenMetadata(
 | Message | Cause |
 |---|---|
 | `BLUX: getTokenMetadata must be called after createConfig` | Called before `createConfig` ran. |
-| `BLUX: getTokenMetadata requires a token contract id (C...).` | `address` was missing or not a valid contract id. |
+| `BLUX: getTokenMetadata requires a token contract id or .xlm name.` | `address` was missing. |
+| `BLUX: "<name>" resolves to an account address (G...), but this field requires a contract address (C...).` | The record is valid, but it points to an account rather than a token contract. |
 | `BLUX: getTokenMetadata could not read the token.` | The simulation returned no readable result. |
 
 A contract that is missing the standard `decimals`/`name`/`symbol` entrypoints causes the underlying simulation to fail, which propagates as an error — `getTokenMetadata` expects a SEP-41-compatible token. A missing `owner()` is **not** an error; `owner` is simply omitted.

@@ -3,7 +3,7 @@ title: Get Strict Receive Paths
 description: Fetch strict receive payment paths using the Blux core SDK.
 ---
 
-The `getStrictReceivePaths` function returns available payment paths for a strict receive operation.
+The `getStrictReceivePaths` function returns available payment paths for a strict receive operation. When `source` is an account string, it accepts `G…`, `M…`, SEP-2 federation, or `.xlm`; see [address resolution](/javascript/core/address-resolution).
 
 The return value contains two properties:
 - `response` — the records you can use directly
@@ -29,12 +29,12 @@ type GetPaymentPathResult = {
 import { core } from "@bluxcc/core";
 
 // args: [
-//   source: string | Asset[],
-//   destinationAsset: Asset,
+//   source: string | AssetArg[], // account address/name, or source assets
+//   destinationAsset: AssetArg,
 //   destinationAmount: string,
 // ]
 const result = await core.getStrictReceivePaths(
-  [source, destinationAsset, destinationAmount],
+  ["alice.xlm", destinationAsset, destinationAmount],
   options,
 );
 ```

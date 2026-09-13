@@ -6,7 +6,7 @@ description: Customize the look and feel of the Blux modal to match your dApp's 
 import { Tab, Tabs } from 'fumadocs-ui/components/tabs';
 import { Callout } from 'fumadocs-ui/components/callout';
 
-Blux is easy to style so it fits the look and feel of your app. You can adjust fonts, colors, borders, and backgrounds to match your design system. Every field is optional — if you leave something out, Blux falls back to the default theme for that field.
+Blux is easy to style so it fits the look and feel of your app. You can adjust fonts, colors, borders, and backgrounds to match your design system. Every field is optional — if you leave something out, Blux uses the inherited value when available, then falls back to the default theme for that field.
 
 ## Setup
 
@@ -42,6 +42,93 @@ createConfig({
 ```
   </Tab>
 </Tabs>
+
+## Inherit your app's theme
+
+Use the `inherit` field to make Blux adopt the semantic theme values of your app's styling system. Set it to one of the supported adapters: `shadcn`, `radix`, `daisyui`, `chakra`, `mantine`, `mui`, `joy`, `heroui` (v3), or `bootstrap`.
+
+Blux reads the active values from the theme around its mount element and keeps them synchronized when your app switches themes. You select one adapter at a time; Blux does not try to guess which styling system your app uses.
+
+```tsx
+<BluxProvider
+  config={{
+    appName: "MyApp",
+    networks: [networks.mainnet],
+    appearance: {
+      inherit: "shadcn",
+    },
+  }}
+>
+  {children}
+</BluxProvider>
+```
+
+### Override inherited values
+
+Specific fields in the same `appearance` object take precedence over values supplied by `inherit`. This lets you inherit the overall theme while customizing individual parts of the Blux UI.
+
+The precedence order is:
+
+1. Specific appearance fields
+2. Values inherited from your styling system
+3. Blux's default theme
+
+For example, the following configuration inherits shadcn's colors, radius, and other supported values, but always uses the supplied purple accent color:
+
+```tsx
+<BluxProvider
+  config={{
+    appName: "MyApp",
+    networks: [networks.mainnet],
+    appearance: {
+      inherit: "shadcn",
+      accentColor: "#7c3aed", // Overrides shadcn's --primary value
+      borderRadius: "12px",   // Overrides shadcn's --radius value
+    },
+  }}
+>
+  {children}
+</BluxProvider>
+```
+
+The same behavior applies in Vanilla JS:
+
+```ts
+createConfig({
+  appName: "MyApp",
+  networks: [core.networks.mainnet],
+  appearance: {
+    inherit: "daisyui",
+    background: "#ffffff", // Overrides daisyUI's --color-base-100 value
+  },
+});
+```
+
+### Advanced inheritance
+
+Pass an options object when the theme uses a nested scope, custom CSS-variable prefix, Chakra color palette, or your own CSS variables:
+
+```ts
+createConfig({
+  appName: "MyApp",
+  networks: [core.networks.mainnet],
+  appearance: {
+    inherit: {
+      source: "css",
+      scope: "#app-theme",
+      variables: {
+        textColor: "--app-foreground",
+        accentColor: "--app-primary",
+        background: "--app-dialog-surface",
+        borderRadius: "--app-dialog-radius",
+      },
+    },
+    borderRadius: "16px", // Overrides --app-dialog-radius
+  },
+});
+```
+
+Use `prefix` to set a custom Chakra, MUI, Joy, or Bootstrap CSS-variable prefix. For Chakra, use `colorPalette` to choose the primary palette whose accent and focus-ring values Blux should inherit. If an inherited value is missing or invalid, Blux keeps the default for that field.
 
 ## Default Themes
 
@@ -86,6 +173,7 @@ Blux ships with built-in light and dark defaults applied automatically based on 
 
 | Property | Type | Description |
 |---|---|---|
+| `inherit` | `string \| object` | Styling-system adapter or advanced inheritance options; specific appearance fields override inherited values |
 | `logo` | `string` | URL of your app logo displayed in the modal |
 | `font` | `string` | Font family for all modal text |
 | `textColor` | `string` | Main text color |

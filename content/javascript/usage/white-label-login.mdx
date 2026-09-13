@@ -1,0 +1,174 @@
+---
+title: White-label Login
+description: Build your own authentication UI with the headless login methods in @bluxcc/core.
+---
+
+import { Callout } from 'fumadocs-ui/components/callout';
+
+White-label login lets you keep your own markup, styling, copy, and user flow while Blux handles authentication, account provisioning, and session state. Instead of opening the complete `blux.login()` modal, call the method for the login option the user selected.
+
+## Available methods
+
+| Login option | Core API | Opens the full Blux login modal? |
+|---|---|---|
+| Email code | `blux.loginEmail.sendCode()` and `.loginWithCode()` | No |
+| SMS code | `blux.loginSms.sendCode()` and `.loginWithCode()` | No |
+| Social account | `blux.loginOAuth(provider)` | No; opens the provider popup |
+| Passkey | `blux.loginPasskey()` | No; opens the browser's passkey prompt |
+| Specific wallet | `blux.loginWallet(walletName)` | No; opens the wallet prompt |
+| Wallet picker | `blux.loginWallet()` | Yes; opens Blux's wallet-only picker |
+
+Every successful login method resolves to the authenticated `IUser` and updates `blux.user` and `blux.isAuthenticated`.
+
+<Callout type="info">
+  The exported method names are `loginEmail`, `loginSms`, `loginOAuth`, `loginPasskey`, and `loginWallet`. Email and SMS use `loginWithCode` for the verification step.
+</Callout>
+
+## Configure the allowed methods
+
+Initialize Blux once, and include every method your UI can start in `loginMethods`:
+
+```ts
+import { blux, core, createConfig } from "@bluxcc/core";
+
+createConfig({
+  appId: "your-app-id",
+  appName: "My App",
+  networks: [core.networks.mainnet],
+  loginMethods: [
+    "email",
+    "sms",
+    "google",
+    "passkey",
+    "wallet",
+  ],
+});
+```
+
+A headless method rejects if it is missing from `loginMethods`. Social providers must also be enabled for the same app in the [Blux Dashboard](/dashboard/socials). SMS login requires a paid Blux plan.
+
+## Email login
+
+Email login has two steps: send a one-time code, then verify it.
+
+```ts
+const email = "user@example.com";
+
+await blux.loginEmail.sendCode(email);
+
+// Ask the user for the code sent to their inbox.
+const user = await blux.loginEmail.loginWithCode(email, "123456");
+
+console.log(user.address);
+```
+
+The callable form returns the same pair of methods if it fits your component better:
+
+```ts
+const { sendCode, loginWithCode } = blux.loginEmail();
+
+await sendCode("user@example.com");
+await loginWithCode("user@example.com", "123456");
+```
+
+## SMS login
+
+SMS follows the same two-step flow. Pass phone numbers in international [E.164](https://www.itu.int/rec/T-REC-E.164) format.
+
+```ts
+const phone = "+15555555555";
+
+await blux.loginSms.sendCode(phone);
+const user = await blux.loginSms.loginWithCode(phone, "123456");
+```
+
+<Callout type="warn">
+  Adding `"sms"` to `loginMethods` is not enough on its own. The app must be on a paid plan; otherwise SMS calls reject and SMS is not offered by the built-in login modal.
+</Callout>
+
+## Social login
+
+Call `loginOAuth` directly from the user's click. The SDK opens the provider window immediately, completes the callback through Blux, and resolves with the authenticated user.
+
+```ts
+googleButton.addEventListener("click", () => {
+  void blux.loginOAuth("google")
+    .then((user) => {
+      console.log("Signed in as", user.address);
+    })
+    .catch((error) => {
+      console.error(error);
+    });
+});
+```
+
+Do not wait for another asynchronous operation before calling `loginOAuth`; browsers may otherwise block the popup. The provider must appear in `loginMethods` and be enabled in the dashboard. See [Social Login](/dashboard/socials) for every provider key and the credential setup.
+
+### Telegram
+
+Telegram does not use the OAuth popup. In a Telegram Mini App, Blux reads the available Web App init data when Mini App login is enabled. For a custom Telegram Login Widget, pass the signed widget payload:
+
+```ts
+await blux.loginOAuth("telegram", {
+  telegramUser: widgetUser,
+});
+```
+
+If you want Blux to render the configured Telegram widget, use `blux.login()` instead.
+
+## Passkey login
+
+`loginPasskey` registers a passkey on the first visit and authenticates with it on later visits.
+
+```ts
+passkeyButton.addEventListener("click", () => {
+  void blux.loginPasskey().then((user) => {
+    console.log(user.address);
+  });
+});
+```
+
+Call it directly from a click or another user gesture so the browser can show its WebAuthn prompt.
+
+## Wallet login
+
+Pass a wallet name to skip Blux's general login modal and open that wallet directly:
+
+```ts
+freighterButton.addEventListener("click", () => {
+  void blux.loginWallet("freighter").then((user) => {
+    console.log(user.address);
+  });
+});
+```
+
+The wallet must be installed and available in the current browser. Call `blux.loginWallet()` without a name when you want Blux's wallet-only picker instead:
+
+```ts
+await blux.loginWallet();
+```
+
+WalletConnect is the one named-wallet exception: it still opens Blux's QR screen because there is no browser extension prompt to open.
+
+## Readiness, errors, and the hosted fallback
+
+Keep buttons for OAuth, passkeys, and named wallets disabled until `blux.isReady` is `true`. Wrap calls in `try/catch` and show the returned `Error.message` in your own UI.
+
+```ts
+async function signInWithWallet() {
+  if (!blux.isReady) return;
+
+  try {
+    const user = await blux.loginWallet("freighter");
+    renderAccount(user);
+  } catch (error) {
+    renderError(error instanceof Error ? error.message : "Login failed");
+  }
+}
+```
+
+You can mix white-label and hosted flows. For example, render custom Google and email buttons, then offer `blux.loginWallet()` for wallet selection or `blux.login()` as an all-method fallback.
+
+<Callout type="info">
+  `showWalletUIs` controls Blux's signing and transaction confirmation screens. It does not turn white-label login on or off; choosing a headless login method does that.
+</Callout>

@@ -8,6 +8,9 @@ import { Callout } from 'fumadocs-ui/components/callout';
 
 The `useAccounts` hook returns a paginated list of Stellar accounts matching the given filters. At least one filter — `forSigner`, `forAsset`, `sponsor`, or `forLiquidityPool` — must be provided.
 
+`forSigner` and `sponsor` accept `G…`, `M…`, SEP-2 federation, or `.xlm`
+names. See [address resolution](/javascript/core/address-resolution).
+
 ## Import
 ```tsx
 import { useAccounts } from "@bluxcc/react";

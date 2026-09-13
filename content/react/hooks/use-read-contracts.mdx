@@ -13,9 +13,19 @@ import { Callout } from 'fumadocs-ui/components/callout';
 import { useReadContracts } from "@bluxcc/react";
 ```
 
-## Encoding arguments with `ToScVal`
+## Native contract arguments
 
-Soroban is strongly typed, so each argument **must** be encoded with the `ToScVal` class to match the type the contract expects. See the [`ToScVal` reference](/javascript/core/readContracts#encoding-arguments-with-toscval) for the full list of methods.
+Pass native JavaScript values in the contract function's positional order. The hook uses the deployed contract spec to encode each value as the declared Soroban type, so `args` does not require `ToScVal`.
+
+Addresses, strings, and symbols are passed as strings; booleans as booleans; bytes as `Uint8Array`; and vectors or tuples as arrays. Integers accept safe numbers, `bigint` values, or decimal strings. Prefer `bigint` or a decimal string for wide integers such as `i128`.
+
+The contract `address` and every value whose ABI type is `Address` also accept
+`.xlm` names and SEP-2 federation addresses, including nested address values.
+See [address resolution](/javascript/core/address-resolution).
+
+<Callout type="info">
+  Pre-encoded `xdr.ScVal` arguments remain supported, but manual encoding is optional.
+</Callout>
 
 ## Usage
 
@@ -24,17 +34,15 @@ Read a token's `name`, `decimals`, and a user's `balance` in one batch:
 <Tabs items={['index.tsx', 'config.ts']} defaultIndex={0}>
 <Tab value="index.tsx">
 ```tsx
-import { useReadContracts, useBlux, ToScVal } from "@bluxcc/react";
+import { useReadContracts } from "@bluxcc/react";
 
 const TOKEN = "CB64D3G7SM2RTH6JSGG34DDTFTQ5CFDKVDZJZSODMCX4NJ2HV2KN7OG";
 
-function TokenInfo() {
-  const { user } = useBlux();
-
-  const { data, isLoading } = useReadContracts([
+function TokenInfo({ account }: { account: string }) {
+  const { data, isLoading } = useReadContracts<[string, number, string]>([
     { address: TOKEN, fn: "name", args: [] },
     { address: TOKEN, fn: "decimals", args: [] },
-    { address: TOKEN, fn: "balance", args: [ToScVal.address(user?.address ?? "")] },
+    { address: TOKEN, fn: "balance", args: ["alice.xlm"] },
   ]);
 
   if (isLoading) return <p>Loading…</p>;
@@ -49,6 +57,7 @@ function TokenInfo() {
 root.render(
   <BluxProvider
     config={{
+      appId: "your-app-id",
       appName: "MyApp",
       networks: [networks.testnet, networks.mainnet],
     }}
@@ -59,6 +68,24 @@ root.render(
 ```
 </Tab>
 </Tabs>
+
+## Return types
+
+Runtime contract addresses and function names do not give TypeScript a
+compile-time ABI. Pass an array/tuple generic whose entries match the calls:
+
+```tsx
+const query = useReadContracts<[string, number, string]>([
+  { address: TOKEN, fn: "name", args: [] },
+  { address: TOKEN, fn: "decimals", args: [] },
+  { address: TOKEN, fn: "balance", args: ["alice.xlm"] },
+]);
+
+query.data?.values[2]; // string
+```
+
+Omit the generic for `readonly unknown[]`, and include `null` for any call that
+may return no value.
 
 You can pass network options and TanStack Query options (such as `enabled`) as the second and third arguments:
 

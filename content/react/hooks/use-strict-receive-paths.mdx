@@ -8,6 +8,9 @@ import { Callout } from 'fumadocs-ui/components/callout';
 
 The `useStrictReceivePaths` hook returns available payment paths for a strict receive operation. `source`, `destinationAsset`, and `destinationAmount` are all required — the hook will not run without them. Import `Asset` from `@bluxcc/react`.
 
+When `source` is an account string, it accepts `G…`, `M…`, SEP-2 federation,
+or `.xlm`. See [address resolution](/javascript/core/address-resolution).
+
 ## Import
 ```tsx
 import { useStrictReceivePaths, Asset } from "@bluxcc/react";
@@ -23,7 +26,7 @@ Basic usage with required arguments:
 import { useStrictReceivePaths, Asset } from "@bluxcc/react";
 
 function App() {
-  const source = "GAUZ....NOWM";
+  const source = "alice.xlm";
   const destinationAsset = new Asset("USDC", "GA5Z....KZVN");
   const destinationAmount = "10";
 
@@ -90,7 +93,7 @@ root.render(
 ## Parameters
 
 ### `source` (required)
-`string | Asset[]`
+`string | AssetArg[]`
 
 Either a source account ID or an array of assets to use as possible payment sources.
 

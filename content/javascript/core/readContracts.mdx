@@ -15,12 +15,10 @@ It accepts an **array of calls** and runs them in parallel, so you can batch sev
 
 ## Type
 ```ts
-import { xdr } from "@stellar/stellar-sdk";
-
 type IContractCall = {
-  address: string;     // contract ID (C...)
-  fn: string;          // function name to invoke
-  args: xdr.ScVal[];   // arguments, encoded as ScVal (see ToScVal below)
+  address: string;   // C… contract ID, SEP-2 address, or .xlm name
+  fn: string;        // function name to invoke
+  args: unknown[];   // native values in the function's positional order
 };
 
 type ReadContractsOptions = {
@@ -29,49 +27,63 @@ type ReadContractsOptions = {
 
 // Returns the simulation objects and the decoded native values,
 // index-aligned with the calls you passed in.
-type ReadContractsResult = {
+type ReadContractsResult<TValues extends readonly unknown[]> = {
   raws: SimulateTransactionResponse[];
-  values: unknown[];
+  values: TValues;
 };
 
-const readContracts: (
+const readContracts: <TValues extends readonly unknown[] = readonly unknown[]>(
   calls: IContractCall[],
   options?: ReadContractsOptions,
-) => Promise<ReadContractsResult>;
+) => Promise<ReadContractsResult<TValues>>;
 ```
 
-## Encoding arguments with `ToScVal`
+## Native contract arguments
 
-Soroban contracts are strongly typed, so every argument must be encoded as the **exact** Soroban type the contract function expects — you can't pass plain JS values. Blux exports the `ToScVal` class for this. **You must** wrap each argument with the matching `ToScVal` method (`u32`, `i128`, `address`, `symbol`, `string`, etc.); passing the wrong type will cause the simulation to fail.
+Pass ordinary JavaScript values in the same order as the contract function's parameters. Blux loads the deployed contract spec and encodes every value as the declared Soroban type, so `args` does not require the `ToScVal` class.
 
 ```ts
-import { ToScVal } from "@bluxcc/core";
-
-ToScVal.address("GA...");        // address
-ToScVal.u32(42);                 // u32
-ToScVal.i128("1000000000");      // i128 (accepts string | number | bigint)
-ToScVal.u128(1_000_000n);        // u128
-ToScVal.symbol("transfer");      // symbol
-ToScVal.string("hello");         // string
-ToScVal.boolean(true);           // bool
-ToScVal.vec([ToScVal.u32(1), ToScVal.u32(2)]); // vec
-ToScVal.map({ amount: ToScVal.i128("100") });  // map
+args: [
+  "alice.xlm",      // resolved and encoded when the spec declares Address
+  "1000000000",     // encoded as i128 when the spec declares i128
+  true,              // encoded as bool when the spec declares bool
+]
 ```
 
-Available methods include `i32`, `i64`, `i128`, `i256`, `u32`, `u64`, `u128`, `u256`, `bytes`, `duration`, `timepoint`, `void`, and more.
+Common native values include:
+
+| Soroban parameter | JavaScript value |
+|---|---|
+| Address, string, or symbol | `string` |
+| Boolean | `boolean` |
+| Integer | Safe `number`, `bigint`, or decimal `string` |
+| Bytes | `Uint8Array` |
+| Vector or tuple | `Array` |
+| Map | `Map` or an array of `[key, value]` entries |
+| Struct | An object or tuple matching the contract definition |
+
+For wide integers such as `i128`, prefer a `bigint` or decimal string so the value cannot lose precision. Argument count, order, and shape must still match the contract spec.
+
+Address-typed values accept `G…`, `C…`, SEP-2 federation addresses, and `.xlm`
+names. Resolution also works when an ABI `Address` is nested in an option,
+vector, tuple, map, struct, or union. See [address resolution](/javascript/core/address-resolution).
+
+<Callout type="info">
+  Existing code may continue passing pre-encoded `xdr.ScVal` arguments. Native values and pre-encoded values can also be mixed, but manual encoding is no longer required.
+</Callout>
 
 ## Usage
 
 Read a single value — for example a token's `balance`:
 
 ```ts
-import { core, ToScVal } from "@bluxcc/core";
+import { core } from "@bluxcc/core";
 
-const { values } = await core.readContracts([
+const { values } = await core.readContracts<[string]>([
   {
     address: "CB64D3G7SM2RTH6JSGG34DDTFTQ5CFDKVDZJZSODMCX4NJ2HV2KN7OG",
     fn: "balance",
-    args: [ToScVal.address("GA...USER")],
+    args: ["alice.xlm"],
   },
 ]);
 
@@ -81,18 +93,36 @@ console.log(values[0]); // decoded balance, e.g. "1000000000"
 Batch several reads at once — results are index-aligned with the calls:
 
 ```ts
-import { core, ToScVal } from "@bluxcc/core";
+import { core } from "@bluxcc/core";
 
 const TOKEN = "CB64D3G7SM2RTH6JSGG34DDTFTQ5CFDKVDZJZSODMCX4NJ2HV2KN7OG";
 
-const { values } = await core.readContracts([
+const { values } = await core.readContracts<[string, number, string]>([
   { address: TOKEN, fn: "name", args: [] },
   { address: TOKEN, fn: "decimals", args: [] },
-  { address: TOKEN, fn: "balance", args: [ToScVal.address("GA...USER")] },
+  { address: TOKEN, fn: "balance", args: ["GA...USER"] },
 ]);
 
 const [name, decimals, balance] = values;
 ```
+
+## Return types
+
+The deployed ABI is loaded at runtime, so TypeScript cannot infer a return type
+from runtime `address`, `fn`, and `network` strings. Pass one tuple generic for
+the batch, in the same order as the calls:
+
+```ts
+const result = await core.readContracts<[string, number, string]>(calls);
+
+result.values[0]; // string
+result.values[1]; // number
+result.values[2]; // string
+```
+
+Omit the generic when the return shapes are not known; values are then
+`readonly unknown[]`. Include `null` in an entry's type when that function can
+return no value.
 
 <Callout type="info">
   `bigint` results are returned as strings so they're safe to serialize. The raw simulation objects are available under `raws` if you need footprint or resource details.

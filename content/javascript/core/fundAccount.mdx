@@ -1,0 +1,36 @@
+---
+title: Fund Account
+description: Fund an account with Friendbot on supported Stellar test networks.
+---
+
+import { Callout } from 'fumadocs-ui/components/callout';
+
+`fundAccount` requests test lumens from Friendbot for one account on one or more
+supported test networks. The address can be a `G…`/`M…` account, SEP-2
+federation address, or `.xlm` name.
+
+```ts
+import { core, networks } from "@bluxcc/core";
+
+const results = await core.fundAccount("alice.xlm", {
+  network: networks.testnet,
+});
+```
+
+Omit the first argument to fund the connected account:
+
+```ts
+const results = await core.fundAccount();
+```
+
+Each result reports the network, Friendbot transaction hash when available, and
+one of three statuses: `funded`, `already_funded`, or `failed`.
+
+<Callout type="info">
+  `.xlm` resolution uses the mainnet XLM Domains registry even when Friendbot
+  funds testnet. Friendbot then creates or funds the resolved `G…` account on
+  the selected test network. See [address resolution](/javascript/core/address-resolution).
+</Callout>
+
+Mainnet is not fundable through Friendbot. Passing an unsupported network rejects
+the call before any request is made.

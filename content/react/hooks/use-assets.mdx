@@ -8,6 +8,9 @@ import { Callout } from 'fumadocs-ui/components/callout';
 
 The `useAssets` hook returns a paginated list of Stellar assets. All parameters are optional — called with no arguments it returns the latest assets from the network.
 
+`forIssuer` accepts a `G…`/`M…` account, SEP-2 federation address, or `.xlm`
+name. See [address resolution](/javascript/core/address-resolution).
+
 ## Import
 ```tsx
 import { useAssets } from "@bluxcc/react";

@@ -16,11 +16,22 @@ loginMethods?: Array<
   | 'sms'
   | 'passkey'
   | 'google'
-  | 'meta'
-  | 'github'
-  | 'twitter'
-  | 'discord'
+  | 'farcaster'
+  | 'tiktok'
+  | 'linkedin'
+  | 'twitch'
+  | 'kick'
+  | 'spotify'
+  | 'instagram'
   | 'apple'
+  | 'discord'
+  | 'github'
+  | 'meta'
+  | 'telegram'
+  | 'microsoft'
+  | 'gitlab'
+  | 'twitter'
+  | 'steam'
 >;
 ```
 
@@ -59,16 +70,24 @@ createConfig({
 
 ## Social login
 
-Blux supports social sign-in with providers like **Google**, **Meta**, **GitHub**, **Twitter (X)**, **Discord**, and **Apple**. Add the provider keys to `loginMethods` to show them in the modal:
+Blux supports **Google, Farcaster, TikTok, LinkedIn, Twitch, Kick, Spotify, Instagram, Apple, Discord, GitHub, Meta, Telegram, Microsoft, GitLab, X, and Steam**. Add their provider keys to `loginMethods` to show them in the modal:
 
 ```ts
 createConfig({
-  loginMethods: ["google", "meta", "github", "email"],
+  loginMethods: ["google", "farcaster", "github", "email"],
 });
 ```
 
 <Callout type="warn">
   Social providers must first be **enabled for your app in the [Blux Dashboard](/dashboard)**. Each provider you add to `loginMethods` has to be turned on there for your `appId`, otherwise it won't appear in the modal. See [Socials](/dashboard/socials) for setup.
+</Callout>
+
+## White-label login
+
+`loginMethods` also authorizes the headless methods used by your own login UI. The core SDK exports `loginEmail`, `loginSms`, `loginOAuth`, `loginPasskey`, and `loginWallet`; the React package provides a corresponding hook for each one.
+
+<Callout type="info">
+  Learn how to build the complete flow in [JavaScript](/javascript/usage/white-label-login) or [React](/react/usage/white-label-login).
 </Callout>
 
 <Callout type="info">

@@ -4,6 +4,8 @@ description: Fetch a paginated list of Stellar liquidity pools using the Blux co
 ---
 
 The `getLiquidityPools` function returns a paginated list of Stellar liquidity pools.
+`forAccount` accepts `G…`, `M…`, SEP-2 federation, or `.xlm`; see
+[address resolution](/javascript/core/address-resolution).
 
 The return value contains two properties:
 - `response` — the records you can use directly
@@ -19,8 +21,8 @@ export type CallBuilderOptions = {
 };
 
 type GetLiquidityPoolsOptions = CallBuilderOptions & {
-  forAssets?: Array<Asset>;
-  forAccount?: string;
+  forAssets?: Array<AssetArg>;
+  forAccount?: string; // G…/M…, SEP-2 address, or .xlm name
 };
 
 type GetLiquidityPoolsResult = {
@@ -33,5 +35,5 @@ type GetLiquidityPoolsResult = {
 ```typescript
 import { core } from "@bluxcc/core";
 
-const result = await core.getLiquidityPools({});
+const result = await core.getLiquidityPools({ forAccount: "alice.xlm" });
 ```

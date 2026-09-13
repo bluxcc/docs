@@ -1,0 +1,60 @@
+---
+title: useResolveXlmNameByAddress
+description: Find a verified XLM Domains name for a Stellar account in React.
+---
+
+import { Callout } from 'fumadocs-ui/components/callout';
+
+`useResolveXlmNameByAddress` is the React query wrapper around
+[`resolveXlmNameByAddress`](/javascript/core/resolveXlmNameByAddress). Give it a
+classic Stellar account address (`G…`) to retrieve one verified `.xlm` name.
+
+```tsx
+import { useResolveXlmNameByAddress } from "@bluxcc/react";
+
+function AccountName({ address }: { address: string }) {
+  const { data, isLoading, error } =
+    useResolveXlmNameByAddress(address);
+
+  if (isLoading) return <span>Finding name…</span>;
+  if (error) return <span>No verified name</span>;
+
+  return <span>{data?.name}</span>;
+}
+```
+
+## Signature
+
+```ts
+useResolveXlmNameByAddress(
+  address: string,
+  options?: XlmNameLookupOptions,
+  queryOptions?: QueryOptions<XlmAccountNameRecord>,
+): UseQueryResult<XlmAccountNameRecord, Error>;
+```
+
+| Argument | Description |
+|---|---|
+| `address` | A classic `G…` account. The query is disabled while this is empty. |
+| `options` | SEP-2 options: `timeout` and `allowHttp`. |
+| `queryOptions` | TanStack Query options such as `enabled`, `staleTime`, `retry`, and `select`. |
+
+```tsx
+const result = useResolveXlmNameByAddress(
+  accountAddress,
+  { timeout: 5000 },
+  { enabled: Boolean(accountAddress), staleTime: 60_000 },
+);
+```
+
+The returned `data` includes the normalized `name`, its `federationAddress`,
+the verified `publicKey`, and any memo details. When an account owns multiple
+names, XLM Domains chooses which reverse record is returned.
+
+<Callout type="info">
+  Only `G…` accounts are accepted. Invalid addresses, missing reverse records,
+  and records that fail forward verification are exposed through `error`.
+</Callout>
+
+To resolve a `.xlm` name to its address, use
+[`useResolveXlmName`](/react/hooks/use-resolve-xlm-name).

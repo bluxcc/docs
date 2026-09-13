@@ -8,6 +8,9 @@ import { Callout } from 'fumadocs-ui/components/callout';
 
 The `useStrictSendPaths` hook returns available payment paths for a strict send operation. `sourceAsset`, `sourceAmount`, and `destination` are all required — the hook will not run without them. Import `Asset` from `@bluxcc/react`.
 
+When `destination` is an account string, it accepts `G…`, `M…`, SEP-2
+federation, or `.xlm`. See [address resolution](/javascript/core/address-resolution).
+
 ## Import
 ```tsx
 import { useStrictSendPaths, Asset } from "@bluxcc/react";
@@ -25,7 +28,7 @@ import { useStrictSendPaths, Asset } from "@bluxcc/react";
 function App() {
   const sourceAsset = new Asset("USDC", "GA5Z....KZVN");
   const sourceAmount = "100.00";
-  const destination = "GAUZ....NOWM";
+  const destination = "alice.xlm";
 
   const { data } = useStrictSendPaths([sourceAsset, sourceAmount, destination]);
 }
@@ -100,7 +103,7 @@ The asset to send from the source account.
 The exact amount to send, as a decimal string (e.g. `"100.00"`).
 
 ### `destination` (required)
-`string | Asset[]`
+`string | AssetArg[]`
 
 Either a destination account ID or an array of assets representing acceptable destination assets.
 

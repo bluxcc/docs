@@ -1,0 +1,72 @@
+---
+title: useResolveXlmName
+description: Resolve an XLM Domains name in React with TanStack Query caching and status state.
+---
+
+import { Callout } from 'fumadocs-ui/components/callout';
+
+`useResolveXlmName` is the React query wrapper around
+[`resolveXlmName`](/javascript/core/resolveXlmName). It resolves a `.xlm` name
+to a validated account or contract record and exposes TanStack Query loading,
+error, caching, and refetching state.
+
+```tsx
+import { useResolveXlmName } from "@bluxcc/react";
+
+function Recipient({ name }: { name: string }) {
+  const { data, isLoading, error } = useResolveXlmName(name);
+
+  if (isLoading) return <span>Resolving…</span>;
+  if (error) return <span>{error.message}</span>;
+
+  return <code>{data?.address}</code>;
+}
+```
+
+Use the `kind` field before reading the address-specific property:
+
+```tsx
+const { data } = useResolveXlmName("token.xlm");
+
+if (data?.kind === "account") {
+  console.log(data.publicKey);
+} else if (data?.kind === "contract") {
+  console.log(data.contractId);
+}
+```
+
+## Signature
+
+```ts
+useResolveXlmName(
+  name: string,
+  options?: XlmNameLookupOptions,
+  queryOptions?: QueryOptions<XlmNameRecord>,
+): UseQueryResult<XlmNameRecord, Error>;
+```
+
+| Argument | Description |
+|---|---|
+| `name` | A `.xlm` name such as `alice.xlm`. The query is disabled while this is empty. |
+| `options` | SEP-2 options: `timeout` and `allowHttp`. |
+| `queryOptions` | TanStack Query options such as `enabled`, `staleTime`, `retry`, and `select`. |
+
+```tsx
+const result = useResolveXlmName(
+  "alice.xlm",
+  { timeout: 5000 },
+  { staleTime: 60_000, retry: 1 },
+);
+```
+
+`data` is the same discriminated `XlmNameRecord` returned by the core function,
+including `name`, `federationAddress`, `address`, `kind`, optional memo fields,
+and either `publicKey` or `contractId`.
+
+<Callout type="info">
+  This query does not depend on the active Blux network. XLM Domains resolves
+  from its mainnet registry. Resolution failures are available through `error`.
+</Callout>
+
+To resolve in the other direction, use
+[`useResolveXlmNameByAddress`](/react/hooks/use-resolve-xlm-name-by-address).

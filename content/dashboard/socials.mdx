@@ -1,29 +1,105 @@
 ---
-title: Socials
-description: Enable social login providers (Google, Meta, GitHub, and more) for your app.
+title: Social Login
+description: Enable and configure every social login provider available for your Blux app.
 ---
 
 import { Callout } from 'fumadocs-ui/components/callout';
 
-Blux can let your users sign in with their existing social accounts — **Google**, **Meta**, **GitHub**, **Twitter (X)**, **Discord**, and **Apple**. Social providers are configured per-app from the dashboard.
+Blux supports **Google, Farcaster, TikTok, LinkedIn, Twitch, Kick, Spotify, Instagram, Apple, Discord, GitHub, Meta, Telegram, Microsoft, GitLab, X, and Steam**. Social providers are enabled separately for each app from its **Socials** page in the [Blux Dashboard](https://dashboard.blux.cc).
 
-## How it works
+## Choose a provider in the dashboard
 
-Social login is a **two-step** setup:
+Open your project, select **Socials**, and find the provider you want. The badge on its card tells you what is required:
 
-1. **Enable the provider in the dashboard.** In your app's settings, turn on each social provider you want to offer. This ties the provider to your `appId`.
-2. **Add it to `loginMethods`.** In your app config, list the provider keys so they appear in the login modal.
+- **Ready to enable** or **Can be enabled without credentials** — switch it on. No credential form is required.
+- **Add credentials to enable** — open the provider, register the displayed redirect URI in its developer console, then enter its client ID and client secret.
+- **Requires your own credentials** — this provider cannot use shared Blux credentials. Complete its provider-specific form before enabling it.
+
+Steam and Farcaster never require client credentials. Apple and Telegram always require credentials owned by your project. Other OAuth providers are one-click when shared Blux credentials are available; otherwise the dashboard asks for your own. This can vary by provider and deployment, so the dashboard badge is the source of truth.
+
+| Provider | `loginMethods` key | Dashboard setup |
+|---|---|---|
+| Google | `google` | One-click when shared credentials are available; otherwise Client ID + Client Secret |
+| Farcaster | `farcaster` | One-click; no credentials |
+| TikTok | `tiktok` | Client Key + Client Secret unless shared credentials are available |
+| LinkedIn | `linkedin` | Client ID + Client Secret unless shared credentials are available |
+| Twitch | `twitch` | Client ID + Client Secret unless shared credentials are available |
+| Kick | `kick` | Client ID + Client Secret unless shared credentials are available |
+| Spotify | `spotify` | Client ID + Client Secret unless shared credentials are available |
+| Instagram | `instagram` | Client ID + Client Secret unless shared credentials are available |
+| Apple | `apple` | Your Client ID, Team ID, Key ID, and `.p8` signing key |
+| Discord | `discord` | Client ID + Client Secret unless shared credentials are available |
+| GitHub | `github` | Client ID + Client Secret unless shared credentials are available |
+| Meta | `meta` | App ID + App Secret unless shared credentials are available |
+| Telegram | `telegram` | Your Bot name + Bot token; optional Mini App login |
+| Microsoft | `microsoft` | Client ID + Client Secret unless shared credentials are available |
+| GitLab | `gitlab` | Client ID + Client Secret unless shared credentials are available |
+| X (Twitter) | `twitter` | Client ID + Client Secret unless shared credentials are available |
+| Steam | `steam` | One-click; no credentials |
+
+## Using your own OAuth credentials
+
+Open the provider card and follow these steps:
+
+1. Create an OAuth application in the provider's developer console.
+2. Copy the **Redirect URI** shown by the Blux dashboard and register it as an authorized callback URL with the provider. Use it exactly as shown.
+3. Paste the client ID and client secret into Blux, then save. Saving the credentials also enables the provider.
+
+Using your own credentials gives the provider's consent screen your application's identity. A provider backed by shared credentials can be enabled immediately, but you can still add your own credentials when you want a branded consent screen.
+
+<Callout type="info">
+  Client secrets, bot tokens, and Apple signing keys are write-only and stored encrypted. They are never returned to the dashboard after saving and are never sent to `@bluxcc/core` or `@bluxcc/react` in the browser. Leave a saved secret field empty when updating other settings to keep its current value.
+</Callout>
+
+### Apple
+
+Apple requires a **Client ID**, **Team ID**, **Key ID**, and the complete `.p8` **Signing Key**, including its header and footer lines. Apple cannot use shared Blux credentials.
+
+### Telegram
+
+Create a bot with [BotFather](https://t.me/BotFather), set its allowed domain to your application's domain, and enter the bot name and bot token in the dashboard. You can also enable login from Telegram Mini Apps.
+
+Telegram uses its on-page Login Widget rather than the usual OAuth popup. A headless integration can pass the widget payload to `loginOAuth("telegram", { telegramUser })`; a configured Mini App can use its Web App init data automatically.
+
+## Add the provider to your app
+
+Dashboard configuration controls whether your `appId` may use a provider. Your SDK config controls whether your application offers it. You need both:
 
 ```ts
 createConfig({
   appId: "your-app-id",
+  appName: "My App",
   networks: [core.networks.mainnet],
-  loginMethods: ["google", "meta", "github", "email"],
+  loginMethods: ["google", "farcaster", "github", "email"],
 });
 ```
 
 <Callout type="warn">
-  A provider only shows up in the modal if it's **both** enabled in the dashboard for your `appId` **and** present in `loginMethods`. If you add `"google"` to `loginMethods` but haven't enabled Google in the dashboard, it won't appear.
+  A provider works only when it is **enabled in the dashboard for your `appId`** and **present in `loginMethods`**. If either condition is missing, the built-in modal hides it and a headless `loginOAuth` call rejects.
 </Callout>
 
-See [Login Methods](/configuration/login-methods) for the full list of provider keys and client-side configuration.
+The first enabled social in `loginMethods` is featured in Blux's built-in login screen; the remaining providers appear under **Other socials**. With a white-label UI, you decide how every button is arranged.
+
+## Start social login
+
+Use the built-in login modal or call the headless social method from your own button:
+
+```ts
+// Built-in Blux login UI
+await blux.login();
+
+// Your own button and UI
+await blux.loginOAuth("google");
+```
+
+In React, use the matching hook:
+
+```tsx
+const { loginOAuth, isPending, error } = useLoginOAuth();
+
+<button onClick={() => loginOAuth("google")} disabled={isPending}>
+  Continue with Google
+</button>
+```
+
+OAuth and passkey popups must be started directly from a user click. See [JavaScript white-label login](/javascript/usage/white-label-login) or [React white-label login](/react/usage/white-label-login) for complete examples.

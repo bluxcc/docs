@@ -1,7 +1,7 @@
 ---
 title: Changelog
 description: Release notes for @bluxcc/core and @bluxcc/react. Both packages ship at the same version.
-version: v0.3.1
+version: v0.3.7
 ---
 
 import { Tab, Tabs } from 'fumadocs-ui/components/tabs';
@@ -9,6 +9,32 @@ import { Tab, Tabs } from 'fumadocs-ui/components/tabs';
 `@bluxcc/core` and `@bluxcc/react` are released together. Every version below applies to both packages — pick the one that matches your stack.
 
 Newest releases are at the top.
+
+---
+
+## v0.3.7
+
+September 13, 2026 · [GitHub (core)](https://github.com/bluxcc/core/releases/tag/v0.3.7) · [GitHub (react)](https://github.com/bluxcc/react/releases/tag/v0.3.7)
+
+<Tabs items={['React', 'JavaScript']} defaultIndex={0}>
+<Tab value="React">
+```bash
+npm i @bluxcc/react@^0.3.7
+```
+</Tab>
+<Tab value="JavaScript">
+```bash
+npm i @bluxcc/core@^0.3.7
+```
+</Tab>
+</Tabs>
+
+### Updates
+
+- Added `resolveXlmName()`.
+- Added support for XLM names instead of `G...` addresses across all hooks and helpers.
+- `useReactContracts` and `useWriteContract` now accept standard values, such as numbers, and automatically convert them to the required contract type, such as `i128` and `u64`.
+- Direct `ScVal` inputs remain supported.
 
 ---
 

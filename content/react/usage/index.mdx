@@ -7,7 +7,7 @@ import { Card, Cards } from 'fumadocs-ui/components/card';
 import { getPageTreePeers } from 'fumadocs-core/page-tree';
 import { source } from '@/lib/source';
 
-Blux provides ready-made UI flows for the most common wallet interactions. All of them are accessible through the `useBlux` hook and require no additional setup beyond the `BluxProvider`.
+Blux provides ready-made UI flows through `useBlux` and dedicated [white-label login hooks](/react/usage/white-label-login) for custom authentication screens. Both require the `BluxProvider`.
 
 ## Quick Example
 ```tsx
@@ -18,7 +18,7 @@ function App() {
 }
 ```
 
-All actions are co-located on the `useBlux` hook, so you only ever need a single import to access the full Blux feature set.
+Use `useBlux` for the hosted login modal and authenticated session state. For custom login controls, import `useLoginEmail`, `useLoginSms`, `useLoginOAuth`, `useLoginPasskey`, or `useLoginWallet`.
 
 ---
 

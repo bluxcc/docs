@@ -8,6 +8,9 @@ import { Callout } from 'fumadocs-ui/components/callout';
 
 The `useTransactions` hook returns a paginated list of Stellar transactions. All parameters are optional — called with no arguments it returns the latest transactions from the network.
 
+`forAccount` accepts `G…`, `M…`, SEP-2 federation, or `.xlm`. See
+[address resolution](/javascript/core/address-resolution).
+
 ## Import
 ```tsx
 import { useTransactions } from "@bluxcc/react";

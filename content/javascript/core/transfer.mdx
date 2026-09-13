@@ -25,9 +25,8 @@ import { Asset } from "@stellar/stellar-sdk";
 type Numberish = string | number | bigint;
 
 type TransferOptions = {
-  // Recipient: a Stellar address (G... or muxed M...) or a SEP-2 federated
-  // address ("alice*example.com"). For a `token` transfer a contract id (C...)
-  // is also accepted.
+  // Recipient: a Stellar address (G... or muxed M...), SEP-2 address, or .xlm
+  // name. For a `token` transfer, a contract id/name is also accepted.
   to: string;
 
   // Amount to send (must be > 0). Numbers and bigints are coerced to a string.
@@ -47,8 +46,8 @@ type TransferOptions = {
   // it can claim later instead of failing. Defaults to false.
   claimable?: boolean;
 
-  // A SEP-41 token contract id (C...). When set, value moves through the
-  // contract's transfer(from, to, amount) entrypoint instead of a classic op.
+  // A SEP-41 token contract id (C...) or name resolving to one. When set,
+  // value moves through the contract's transfer entrypoint.
   token?: string;
 
   // Network passphrase to send on. Defaults to the active network.
@@ -60,12 +59,12 @@ const transfer: (options: TransferOptions) => Promise<ISubmittedTransaction>;
 
 | Parameter | Type | Default | Description |
 |---|---|---|---|
-| `to` | `string` | — | **Required.** Recipient. A Stellar address (`G…` or muxed `M…`) or a SEP-2 federated address (`alice*example.com`). For a `token` transfer a contract id (`C…`) is also accepted. |
+| `to` | `string` | — | **Required.** Recipient. A Stellar address (`G…` or muxed `M…`), SEP-2 address, or `.xlm` name. For a `token` transfer, a contract address/name is also accepted. |
 | `amount` | `string \| number \| bigint` | — | **Required.** Must be greater than zero. Decimal units for a classic asset (`"10.5"`); integer base units for a `token`. |
 | `asset` | `string \| Asset` | `"native"` | Classic asset: `"xlm"`/`"native"`, `"CODE:ISSUER"`, or an `Asset` instance. Ignored when `token` is set. |
 | `memo` | `string` | — | Optional text memo. Ignored for `token` transfers. |
 | `claimable` | `boolean` | `false` | Fall back to a claimable balance when the recipient can't receive directly (see below). |
-| `token` | `string` | — | SEP-41 token contract id (`C…`). Switches the call to the Soroban token path. |
+| `token` | `string` | — | SEP-41 token contract id (`C…`) or `.xlm`/SEP-2 name resolving to one. Switches the call to the Soroban token path. |
 | `network` | `string` | active network | Network passphrase to send on — use the `networks` map (e.g. `networks.testnet`). |
 
 ## How the classic operation is chosen
@@ -156,6 +155,16 @@ import { core } from "@bluxcc/core";
 await core.transfer({ to: "alice*example.com", amount: "10" });
 ```
 
+The same call accepts an XLM Domains name. Blux resolves it, validates the
+record, and applies any SEP-2 memo before building the transaction:
+
+```ts
+await core.transfer({ to: "alice.xlm", amount: "10" });
+```
+
+See [address resolution and `.xlm` names](/javascript/core/address-resolution)
+for validation, mainnet/testnet behavior, and contract-address records.
+
 ### Fall back to a claimable balance
 
 When the recipient's account doesn't exist yet, or it hasn't added a trustline for your issued asset, a direct payment would fail. Pass `claimable: true` to send a [claimable balance](/javascript/core/getClaimableBalances) they can claim on their own schedule:
@@ -173,7 +182,7 @@ await core.transfer({
 
 ## Usage — Soroban (SEP-41 token) transfers
 
-Set `token` to a SEP-41 token contract id. Blux calls the contract's `transfer(from, to, amount)` entrypoint with the connected account as `from`, simulates it, signs, submits via Soroban RPC, and waits for finalization — exactly like [`writeContract`](/javascript/core/writeContract), but you don't encode any arguments yourself.
+Set `token` to a SEP-41 token contract id or a `.xlm` name resolving to one. Blux calls the contract's `transfer(from, to, amount)` entrypoint with the connected account as `from`, simulates it, signs, submits via Soroban RPC, and waits for finalization — exactly like [`writeContract`](/javascript/core/writeContract), but you don't encode any arguments yourself.
 
 ```ts
 import { core } from "@bluxcc/core";
@@ -208,7 +217,9 @@ await core.transfer({
 });
 ```
 
-`asset`, `memo`, and `claimable` are classic-only and are ignored on the token path. A `G…`/`M…`/federated `to` is resolved down to its base account id before the contract call.
+`asset`, `memo`, and `claimable` are classic-only and are ignored on the token
+path. A token recipient may be `G…`, `C…`, SEP-2, or `.xlm`; muxed `M…`
+addresses are rejected because Soroban addresses cannot carry a muxed memo id.
 
 <Callout type="info">
   Want to bridge a classic asset (XLM or a `CODE:ISSUER` asset) into Soroban as a token? Use the asset's **Stellar Asset Contract (SAC)** id as `token`. See the Stellar **assets** skill for the SAC interop layer.
@@ -222,7 +233,7 @@ await core.transfer({
 | `asset` | `"native"` / `"CODE:ISSUER"` / `Asset` | ignored |
 | `memo` | supported | ignored |
 | `claimable` | supported | not applicable |
-| Recipient | `G…` / `M…` / federated | `G…` / `M…` / federated / `C…` |
+| Recipient | `G…` / `M…` / SEP-2 / `.xlm` | `G…` / `C…` / SEP-2 / `.xlm` |
 | Operation | `payment` / `createAccount` / `createClaimableBalance` | SEP-41 `transfer(from, to, amount)` |
 | Settles via | Horizon (immediate) | Soroban RPC (waited until finalized) |
 
@@ -233,7 +244,7 @@ await core.transfer({
 ```ts
 interface ISubmittedTransaction {
   hash: string;                          // the transaction hash
-  returnValue: () => Promise<unknown>;   // null for classic & for SEP-41 transfer (void)
+  returnValue: () => Promise<unknown | null>; // null for classic & SEP-41 transfer (void)
   raw: SubmitTransactionResponse | GetSuccessfulTransactionResponse;
 }
 ```

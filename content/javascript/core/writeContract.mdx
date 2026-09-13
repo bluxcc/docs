@@ -11,47 +11,84 @@ Unlike [`readContracts`](/javascript/core/readContracts), this **requires a conn
 
 ## Type
 ```ts
-import { xdr } from "@stellar/stellar-sdk";
-
 type IContractCall = {
-  address: string;     // contract ID (C...)
-  fn: string;          // function name to invoke
-  args: xdr.ScVal[];   // arguments, encoded as ScVal (see ToScVal)
+  address: string;   // C… contract ID, SEP-2 address, or .xlm name
+  fn: string;        // function name to invoke
+  args: unknown[];   // native values in the function's positional order
 };
 
 type WriteContractsOptions = {
   network?: string;    // Omit to use the active network
 };
 
-const writeContract: (
+const writeContract: <TReturnValue = unknown>(
   call: IContractCall,
   options?: WriteContractsOptions,
-) => Promise<unknown>; // resolves with the sendTransaction result
+) => Promise<ISubmittedTransaction<TReturnValue>>;
 ```
 
-## Encoding arguments with `ToScVal`
+## Native contract arguments
 
-As with `readContracts`, every argument **must** be encoded with the `ToScVal` class so it matches the Soroban type the contract expects. See the [`ToScVal` reference in Read Contracts](/javascript/core/readContracts#encoding-arguments-with-toscval) for the full list of methods.
+Pass ordinary JavaScript values in the order declared by the contract function. Blux reads the deployed contract spec and converts them to the required Soroban types; you do not need to wrap arguments with `ToScVal`.
+
+```ts
+args: [
+  "GA...FROM",       // Address
+  "bob.xlm",         // Address; resolved before encoding
+  "1000000000",      // i128
+]
+```
+
+Use a safe `number`, `bigint`, or decimal `string` for integers. Decimal strings and `bigint` values avoid precision loss for wide types such as `i128`. Arrays, maps, bytes, and contract-defined values must match the shape declared in the contract spec.
+
+Both the call's contract `address` and every ABI-declared `Address` argument can
+be a `.xlm` name or SEP-2 federation address. Nested address values are resolved
+inside options, vectors, tuples, maps, structs, and unions. See [address resolution](/javascript/core/address-resolution).
+
+<Callout type="info">
+  Pre-encoded `xdr.ScVal` arguments remain supported for backward compatibility, but they are optional.
+</Callout>
 
 ## Usage
 
 Call a token's `transfer` method. Blux prompts the user to sign before the transaction is submitted:
 
 ```ts
-import { core, ToScVal } from "@bluxcc/core";
+import { core } from "@bluxcc/core";
 
-const result = await core.writeContract({
-  address: "CB64D3G7SM2RTH6JSGG34DDTFTQ5CFDKVDZJZSODMCX4NJ2HV2KN7OG",
+const result = await core.writeContract<bigint>({
+  address: "token.xlm",
   fn: "transfer",
   args: [
-    ToScVal.address("GA...FROM"),   // from
-    ToScVal.address("GB...TO"),     // to
-    ToScVal.i128("1000000000"),     // amount
+    "GA...FROM",       // from: Address
+    "bob.xlm",         // to: Address
+    "1000000000",      // amount: i128
   ],
 });
 
-console.log(result);
+console.log(result.hash);
+console.log(await result.returnValue());
 ```
+
+## Return type
+
+The ABI is inspected at runtime, so TypeScript cannot derive the result from
+runtime `address`, `fn`, and `network` values. Supply the decoded function return
+type as the generic:
+
+```ts
+const result = await core.writeContract<bigint>({
+  address: TOKEN,
+  fn: "mint",
+  args: ["alice.xlm", "10000000"],
+});
+
+const minted = await result.returnValue(); // bigint | null
+```
+
+`returnValue()` includes `null` because void Soroban functions and classic
+transactions have no decoded value. If you omit the generic, the type is
+`unknown | null`.
 
 <Callout type="info">
   `writeContract` must be called after `createConfig` and while a user is connected — the connected account is used as the transaction source. Wrap the call in a `try/catch` to handle simulation failures and user rejection.

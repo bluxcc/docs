@@ -53,7 +53,7 @@ interface ISubmittedTransaction {
   // Resolves to the value the invoked contract function returned, decoded to a
   // native JS value. Resolves to `null` for classic transactions and for
   // Soroban calls whose function returns nothing (void). Always a promise.
-  returnValue: () => Promise<unknown>;
+  returnValue: () => Promise<unknown | null>;
 
   // The underlying response object, for advanced use:
   //  - classic: Horizon SubmitTransactionResponse

@@ -4,6 +4,8 @@ description: Fetch a paginated list of Stellar payments using the Blux core SDK.
 ---
 
 The `getPayments` function returns a paginated list of Stellar payments.
+`forAccount` accepts `G…`, `M…`, SEP-2 federation, or `.xlm`; see
+[address resolution](/javascript/core/address-resolution).
 
 The return value contains two properties:
 - `response` — the records you can use directly
@@ -19,7 +21,7 @@ export type CallBuilderOptions = {
 };
 
 type GetPaymentsOptions = CallBuilderOptions & {
-  forAccount?: string;
+  forAccount?: string; // G…/M…, SEP-2 address, or .xlm name
   forLedger?: string | number;
   forTransaction?: string;
   includeFailed?: boolean;
@@ -30,5 +32,5 @@ type GetPaymentsOptions = CallBuilderOptions & {
 ```typescript
 import { core } from "@bluxcc/core";
 
-const result = await core.getPayments({});
+const result = await core.getPayments({ forAccount: "alice.xlm" });
 ```

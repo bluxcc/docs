@@ -1,0 +1,54 @@
+---
+title: useTransfer
+description: Send XLM, issued assets, or SEP-41 tokens from React.
+---
+
+import { Callout } from 'fumadocs-ui/components/callout';
+
+`useTransfer` wraps [`transfer`](/javascript/core/transfer) in a TanStack
+mutation. It exposes `transfer` for fire-and-forget calls and `transferAsync`
+when you need to await the submitted transaction.
+
+```tsx
+import { useTransfer } from "@bluxcc/react";
+
+function SendButton() {
+  const { transfer, isPending, error } = useTransfer();
+
+  return (
+    <>
+      <button
+        disabled={isPending}
+        onClick={() => transfer({ to: "alice.xlm", amount: "10" })}
+      >
+        Send 10 XLM
+      </button>
+      {error && <p>{error.message}</p>}
+    </>
+  );
+}
+```
+
+For classic assets, `to` accepts `G…`, `M…`, SEP-2 federation, or `.xlm`. On
+the SEP-41 token path it accepts `G…`, `C…`, SEP-2, or `.xlm`; muxed `M…`
+addresses are not Soroban addresses. The `token` field accepts a `C…` id or
+name resolving to one:
+
+```tsx
+const { transferAsync } = useTransfer();
+
+const transaction = await transferAsync({
+  token: "token.xlm",
+  to: "alice.xlm",
+  amount: "10000000", // integer token base units
+});
+```
+
+<Callout type="info">
+  Invalid or unregistered names are returned through the mutation's `error` or
+  reject `transferAsync`. See [address resolution](/javascript/core/address-resolution)
+  for mainnet/testnet behavior and SEP-2 memos.
+</Callout>
+
+All classic-asset, claimable-balance, memo, and network options are identical to
+the core [`TransferOptions`](/javascript/core/transfer#type).

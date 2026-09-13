@@ -1,0 +1,98 @@
+---
+title: resolveXlmName
+description: Resolve an XLM Domains name to a validated Stellar account or Soroban contract record.
+---
+
+import { Callout } from 'fumadocs-ui/components/callout';
+
+`resolveXlmName` resolves a human-readable `.xlm` name to a validated Stellar
+account (`G…`) or Soroban contract (`C…`). It also preserves any memo requested
+by the SEP-2 record.
+
+```ts
+import { resolveXlmName } from "@bluxcc/core";
+
+const record = await resolveXlmName("alice.xlm");
+
+console.log(record.name);    // "alice.xlm"
+console.log(record.address); // "G..." or "C..."
+console.log(record.kind);    // "account" or "contract"
+```
+
+The function trims the input and converts it to lowercase. It accepts only
+`.xlm` notation; use [`resolveAddress`](/javascript/core/address-resolution#resolve-a-name-directly)
+when the input might instead be a literal Stellar address or a standard SEP-2
+address such as `alice*example.com`.
+
+## Type
+
+```ts
+type XlmNameLookupOptions = {
+  allowHttp?: boolean;
+  timeout?: number;
+};
+
+type XlmNameRecord =
+  | {
+      kind: "account";
+      name: string;
+      federationAddress: string;
+      address: string;
+      publicKey: string;
+      memo?: string;
+      memoType?: string;
+    }
+  | {
+      kind: "contract";
+      name: string;
+      federationAddress: string;
+      address: string;
+      contractId: string;
+      memo?: string;
+      memoType?: string;
+    };
+
+function resolveXlmName(
+  name: string,
+  options?: XlmNameLookupOptions,
+): Promise<XlmNameRecord>;
+```
+
+## Account and contract records
+
+Use `kind` to narrow the returned union:
+
+```ts
+const record = await resolveXlmName("token.xlm", { timeout: 5000 });
+
+if (record.kind === "account") {
+  console.log(record.publicKey); // G…
+} else {
+  console.log(record.contractId); // C…
+}
+```
+
+| Field | Type | Description |
+|---|---|---|
+| `name` | `string` | Normalized `.xlm` name. |
+| `federationAddress` | `string` | SEP-2 form, such as `alice*xlm.domains`. |
+| `address` | `string` | Validated `G…` account or `C…` contract address. |
+| `kind` | `"account" \| "contract"` | Discriminator for the address type. |
+| `publicKey` | `string` | Present when `kind` is `"account"`. |
+| `contractId` | `string` | Present when `kind` is `"contract"`. |
+| `memo` | `string \| undefined` | Memo requested by the record, when present. |
+| `memoType` | `string \| undefined` | SEP-2 memo type, when present. |
+
+<Callout type="info">
+  XLM Domains uses a mainnet registry, so this lookup is independent of Blux's
+  active transaction network. If the record contains a memo, include it when
+  constructing a payment yourself.
+</Callout>
+
+To look up a name from a `G…` account, use
+[`resolveXlmNameByAddress`](/javascript/core/resolveXlmNameByAddress).
+
+## Errors
+
+The promise rejects when the input is not a `.xlm` name, the name is
+unregistered, the record has no address, or the returned address is invalid.

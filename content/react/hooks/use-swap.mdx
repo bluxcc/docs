@@ -10,6 +10,10 @@ import { Callout } from 'fumadocs-ui/components/callout';
 
 Named after wagmi's mutation hooks, it returns `swap` (fire-and-forget, an alias of `mutate`) and `swapAsync` (returns a promise, an alias of `mutateAsync`), alongside the usual `isPending`, `isSuccess`, `error`, and `data` state. A user must be connected — the connected account is the source.
 
+The optional `to` field accepts `G…`, `M…`, SEP-2 federation, or `.xlm`. A
+memo from a resolved record is applied unless you pass `memo` yourself. See
+[address resolution](/javascript/core/address-resolution).
+
 ## Import
 ```tsx
 import { useSwap } from "@bluxcc/react";
@@ -146,7 +150,7 @@ The mutation **variables** — what you pass to `swap(...)` / `swapAsync(...)` �
 | `toAsset` | `string \| Asset` | — | **Required.** Asset being bought; must differ from `fromAsset`. |
 | `amount` | `string \| number \| bigint` | — | **Required.** Fixed amount in decimal units; meaning depends on `type`. |
 | `type` | `"exactIn" \| "exactOut"` | `"exactIn"` | Which side of the trade is fixed. |
-| `to` | `string` | connected account | Recipient of the bought asset. Omit for a self-swap. |
+| `to` | `string` | connected account | Recipient of the bought asset: `G…`/`M…`, SEP-2 address, or `.xlm` name. Omit for a self-swap. |
 | `slippage` | `number` | `0.005` | Max slippage as a fraction (`0.005` = 0.5%). |
 | `memo` | `string` | — | Optional text memo. |
 | `network` | `string` | active network | Network passphrase to swap on. |

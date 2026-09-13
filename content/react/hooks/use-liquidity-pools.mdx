@@ -8,6 +8,9 @@ import { Callout } from 'fumadocs-ui/components/callout';
 
 The `useLiquidityPools` hook returns a paginated list of Stellar liquidity pools. All parameters are optional — called with no arguments it returns the latest pools from the network.
 
+`forAccount` accepts `G…`, `M…`, SEP-2 federation, or `.xlm`. See
+[address resolution](/javascript/core/address-resolution).
+
 ## Import
 ```tsx
 import { useLiquidityPools } from "@bluxcc/react";
@@ -113,7 +116,7 @@ root.render(
 ## Parameters
 
 ### `forAssets`
-`Array<Asset> | undefined`
+`Array<AssetArg> | undefined`
 
 Filter pools that include any of the provided assets. Import `Asset` from `@bluxcc/react`.
 

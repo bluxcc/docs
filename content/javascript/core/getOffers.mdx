@@ -4,6 +4,8 @@ description: Fetch a paginated list of Stellar offers using the Blux core SDK.
 ---
 
 The `getOffers` function returns a paginated list of Stellar offers.
+`forAccount`, `sponsor`, and `seller` accept `G…`, `M…`, SEP-2 federation, or
+`.xlm`; see [address resolution](/javascript/core/address-resolution).
 
 The return value contains two properties:
 - `response` — the records you can use directly
@@ -19,11 +21,11 @@ export type CallBuilderOptions = {
 };
 
 type GetOffersOptions = CallBuilderOptions & {
-  forAccount?: string;
-  buying?: Asset;
-  selling?: Asset;
-  sponsor?: string;
-  seller?: string;
+  forAccount?: string; // G…/M…, SEP-2 address, or .xlm name
+  buying?: AssetArg;
+  selling?: AssetArg;
+  sponsor?: string; // G…/M…, SEP-2 address, or .xlm name
+  seller?: string;  // G…/M…, SEP-2 address, or .xlm name
 };
 
 type GetOffersResult = {
@@ -36,5 +38,5 @@ type GetOffersResult = {
 ```typescript
 import { core } from "@bluxcc/core";
 
-const result = await core.getOffers({});
+const result = await core.getOffers({ seller: "alice.xlm" });
 ```

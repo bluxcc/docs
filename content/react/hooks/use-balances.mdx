@@ -8,6 +8,9 @@ import { Callout } from 'fumadocs-ui/components/callout';
 
 The `useBalances` hook returns the balances of a Stellar account. By default it fetches balances for the connected account on the active network, but you can pass an explicit address and network to fetch any account's balances.
 
+The explicit `address` accepts `G…`, `M…`, SEP-2 federation, or `.xlm`; failed
+resolution is exposed as the query `error`. See [address resolution](/javascript/core/address-resolution).
+
 ## Import
 ```tsx
 import { useBalances } from "@bluxcc/react";

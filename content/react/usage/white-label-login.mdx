@@ -1,0 +1,265 @@
+---
+title: White-label Login
+description: Build a custom authentication UI with Blux's React login hooks.
+---
+
+import { Callout } from 'fumadocs-ui/components/callout';
+
+The React package exposes one hook for each headless login method. You render the inputs and buttons; the hooks call Blux, track pending and error state, and update the authenticated user exposed by `useBlux`.
+
+## Available hooks
+
+| Hook | Actions | Use it for |
+|---|---|---|
+| `useLoginEmail` | `sendCode`, `loginWithCode` | Custom email and OTP forms |
+| `useLoginSms` | `sendCode`, `loginWithCode` | Custom phone and OTP forms |
+| `useLoginOAuth` | `loginOAuth` | Custom social-login buttons |
+| `useLoginPasskey` | `loginPasskey` | A custom passkey button |
+| `useLoginWallet` | `loginWallet` | A custom wallet list or Blux's wallet-only picker |
+
+Each action has a fire-and-forget form for event handlers and an async form that returns the authenticated user—for example, `loginOAuth` and `loginOAuthAsync`.
+
+## Configure the provider
+
+Add each method your UI uses to the `BluxProvider` config:
+
+```tsx
+import { BluxProvider, networks } from "@bluxcc/react";
+
+export function Providers({ children }: { children: React.ReactNode }) {
+  return (
+    <BluxProvider
+      config={{
+        appId: "your-app-id",
+        appName: "My App",
+        networks: [networks.mainnet],
+        loginMethods: [
+          "email",
+          "sms",
+          "google",
+          "passkey",
+          "wallet",
+        ],
+      }}
+    >
+      {children}
+    </BluxProvider>
+  );
+}
+```
+
+All login hooks must be rendered below `BluxProvider`. Social providers must also be enabled for the same app in the [Blux Dashboard](/dashboard/socials), and SMS requires a paid plan.
+
+## Email example
+
+The email hook tracks sending and verification independently:
+
+```tsx
+import { FormEvent, useState } from "react";
+import { useLoginEmail } from "@bluxcc/react";
+
+export function EmailLogin() {
+  const [email, setEmail] = useState("");
+  const [code, setCode] = useState("");
+  const {
+    sendCode,
+    loginWithCode,
+    isCodeSent,
+    isSendingCode,
+    isLoggingIn,
+    error,
+  } = useLoginEmail();
+
+  function submit(event: FormEvent) {
+    event.preventDefault();
+
+    if (isCodeSent) {
+      loginWithCode(email, code);
+    } else {
+      sendCode(email);
+    }
+  }
+
+  return (
+    <form onSubmit={submit}>
+      <input
+        type="email"
+        value={email}
+        onChange={(event) => setEmail(event.target.value)}
+        disabled={isCodeSent}
+        required
+      />
+
+      {isCodeSent && (
+        <input
+          inputMode="numeric"
+          autoComplete="one-time-code"
+          value={code}
+          onChange={(event) => setCode(event.target.value)}
+          required
+        />
+      )}
+
+      <button disabled={isSendingCode || isLoggingIn}>
+        {isCodeSent ? "Verify code" : "Send code"}
+      </button>
+
+      {error && <p role="alert">{error.message}</p>}
+    </form>
+  );
+}
+```
+
+Use `sendCodeAsync` and `loginWithCodeAsync` when subsequent code needs the result:
+
+```tsx
+const { sendCodeAsync, loginWithCodeAsync } = useLoginEmail();
+
+await sendCodeAsync("user@example.com");
+const user = await loginWithCodeAsync("user@example.com", "123456");
+```
+
+## SMS example
+
+`useLoginSms` has the same return value as `useLoginEmail`. Use an international E.164 phone number:
+
+```tsx
+const {
+  sendCode,
+  loginWithCode,
+  isCodeSent,
+  isPending,
+  error,
+} = useLoginSms();
+
+// First screen: send the code.
+function sendPhoneCode() {
+  sendCode("+15555555555");
+}
+
+// Second screen: verify the code the user entered.
+function verifyPhoneCode() {
+  loginWithCode("+15555555555", "123456");
+}
+```
+
+<Callout type="warn">
+  SMS login is available only on paid Blux plans. If the app is not entitled to SMS, the action returns an error even when `"sms"` appears in `loginMethods`.
+</Callout>
+
+## Social example
+
+Render any provider however you like and call `loginOAuth` directly from its click handler:
+
+```tsx
+import { useBlux, useLoginOAuth } from "@bluxcc/react";
+
+export function SocialLogin() {
+  const { isReady } = useBlux();
+  const { loginOAuth, isPending, error } = useLoginOAuth({
+    onSuccess: (user) => console.log("Signed in", user.address),
+  });
+
+  return (
+    <>
+      <button
+        onClick={() => loginOAuth("google")}
+        disabled={!isReady || isPending}
+      >
+        Continue with Google
+      </button>
+      <button
+        onClick={() => loginOAuth("github")}
+        disabled={!isReady || isPending}
+      >
+        Continue with GitHub
+      </button>
+      {error && <p role="alert">{error.message}</p>}
+    </>
+  );
+}
+```
+
+The call must begin in the click handler so browsers do not block the provider popup. Configure each provider in both `loginMethods` and the dashboard; see [Social Login](/dashboard/socials).
+
+For a custom Telegram Login Widget, pass its signed payload as the second argument:
+
+```tsx
+loginOAuth("telegram", { telegramUser: widgetUser });
+```
+
+Inside a configured Telegram Mini App, the hook can use the available Web App init data automatically. Use `useBlux().login()` if you want Blux to render its Telegram widget instead.
+
+## Passkey example
+
+```tsx
+import { useBlux, useLoginPasskey } from "@bluxcc/react";
+
+export function PasskeyLogin() {
+  const { isReady } = useBlux();
+  const { loginPasskey, isPending, error } = useLoginPasskey();
+
+  return (
+    <>
+      <button
+        onClick={loginPasskey}
+        disabled={!isReady || isPending}
+      >
+        Continue with a passkey
+      </button>
+      {error && <p role="alert">{error.message}</p>}
+    </>
+  );
+}
+```
+
+Passkey and OAuth actions should run directly from a user gesture. The hooks preserve that call timing before updating their async status.
+
+## Wallet example
+
+Pass a wallet name to open that wallet directly, or omit the name to open Blux's wallet-only picker:
+
+```tsx
+import { useBlux, useLoginWallet } from "@bluxcc/react";
+
+export function WalletLogin() {
+  const { isReady } = useBlux();
+  const { loginWallet, isPending, error } = useLoginWallet();
+
+  return (
+    <>
+      <button
+        onClick={() => loginWallet("freighter")}
+        disabled={!isReady || isPending}
+      >
+        Freighter
+      </button>
+      <button
+        onClick={() => loginWallet()}
+        disabled={!isReady || isPending}
+      >
+        Choose another wallet
+      </button>
+      {error && <p role="alert">{error.message}</p>}
+    </>
+  );
+}
+```
+
+A named wallet must be available in the browser. WalletConnect still opens Blux's QR screen even when selected by name.
+
+## Status and callbacks
+
+All five hooks expose `data`, `error`, `status`, `isIdle`, `isPending`, `isSuccess`, `isError`, and `reset`. Email and SMS additionally expose `isCodeSent`, `isSendingCode`, and `isLoggingIn`.
+
+```tsx
+const login = useLoginOAuth({
+  onSuccess: (user) => navigate(`/account/${user.address}`),
+  onError: (error) => reportError(error),
+  onSettled: (user, error) => console.log({ user, error }),
+});
+```
+
+`useLoginEmail` and `useLoginSms` also accept `onCodeSent`.
+
+You can freely mix these hooks with the hosted flow from `useBlux().login()`. White-label login is independent of `showWalletUIs`, which controls Blux's later signing and transaction confirmation screens.

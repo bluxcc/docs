@@ -5,6 +5,9 @@ description: Fetch a paginated list of Stellar accounts using the Blux core SDK.
 
 The `getAccounts` function returns a paginated list of Stellar accounts. At least one filter — `forSigner`, `forAsset`, `sponsor`, or `forLiquidityPool` — must be provided.
 
+`forSigner` and `sponsor` accept `G…`, `M…`, SEP-2 federation, or `.xlm` names;
+see [address resolution](/javascript/core/address-resolution).
+
 The return value contains two properties:
 - `response` — the account records you can use directly
 - `builder` — exposes `next()` and `prev()` to paginate through results
@@ -19,29 +22,29 @@ export type CallBuilderOptions = {
 };
 
 type GetAccountsOptionsA = {
-  forSigner: string;
-  forAsset?: Asset;
-  sponsor?: string;
+  forSigner: string; // G…/M…, SEP-2 address, or .xlm name
+  forAsset?: AssetArg;
+  sponsor?: string; // G…/M…, SEP-2 address, or .xlm name
   forLiquidityPool?: string;
 };
 
 type GetAccountsOptionsB = {
   forSigner?: string;
-  forAsset: Asset;
+  forAsset: AssetArg;
   sponsor?: string;
   forLiquidityPool?: string;
 };
 
 type GetAccountsOptionsC = {
   forSigner?: string;
-  forAsset?: Asset;
+  forAsset?: AssetArg;
   sponsor: string;
   forLiquidityPool?: string;
 };
 
 type GetAccountsOptionsD = {
   forSigner?: string;
-  forAsset?: Asset;
+  forAsset?: AssetArg;
   sponsor?: string;
   forLiquidityPool: string;
 };
@@ -60,5 +63,5 @@ export type GetAccountsResult = {
 ```typescript
 import { core } from "@bluxcc/core";
 
-const result = await core.getAccounts({});
+const result = await core.getAccounts({ forSigner: "alice.xlm" });
 ```

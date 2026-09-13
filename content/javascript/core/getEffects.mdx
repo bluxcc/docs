@@ -4,6 +4,8 @@ description: Fetch a paginated list of Stellar effects using the Blux core SDK.
 ---
 
 The `getEffects` function returns a paginated list of Stellar effects.
+`forAccount` accepts `G…`, `M…`, SEP-2 federation, or `.xlm`; see
+[address resolution](/javascript/core/address-resolution).
 
 The return value contains two properties:
 - `response` — the records you can use directly
@@ -19,7 +21,7 @@ export type CallBuilderOptions = {
 };
 
 type GetEffectsOptions = CallBuilderOptions & {
-  forAccount?: string;
+  forAccount?: string; // G…/M…, SEP-2 address, or .xlm name
   forLedger?: string | number;
   forTransaction?: string;
   forOperation?: string;
@@ -36,5 +38,5 @@ type GetEffectsResult = {
 ```typescript
 import { core } from "@bluxcc/core";
 
-const result = await core.getEffects({});
+const result = await core.getEffects({ forAccount: "alice.xlm" });
 ```

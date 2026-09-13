@@ -4,6 +4,8 @@ description: Fetch a paginated list of Stellar operations using the Blux core SD
 ---
 
 The `getOperations` function returns a paginated list of Stellar operations.
+`forAccount` accepts `G…`, `M…`, SEP-2 federation, or `.xlm`; see
+[address resolution](/javascript/core/address-resolution).
 
 The return value contains two properties:
 - `response` — the records you can use directly
@@ -19,7 +21,7 @@ export type CallBuilderOptions = {
 };
 
 type GetOperationsOptions = CallBuilderOptions & {
-  forAccount?: string;
+  forAccount?: string; // G…/M…, SEP-2 address, or .xlm name
   forClaimableBalance?: string;
   forLedger?: string | number;
   forTransaction?: string;
@@ -37,5 +39,5 @@ type GetOperationsResult = {
 ```typescript
 import { core } from "@bluxcc/core";
 
-const result = await core.getOperations({});
+const result = await core.getOperations({ forAccount: "alice.xlm" });
 ```

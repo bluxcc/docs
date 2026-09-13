@@ -51,7 +51,7 @@ interface ISubmittedTransaction {
   // Resolves to the value the invoked contract function returned, decoded to a
   // native JS value. Resolves to `null` for classic transactions and for
   // Soroban calls whose function returns nothing (void). Always a promise.
-  returnValue: () => Promise<unknown>;
+  returnValue: () => Promise<unknown | null>;
 
   // The underlying response object, for advanced use:
   //  - classic: Horizon SubmitTransactionResponse
@@ -103,13 +103,13 @@ console.log(result.raw.successful);      // Horizon fields live under `.raw`
 The easiest way to call a contract is [`writeContract`](/javascript/core/writeContract), which builds, simulates, assembles, signs, submits, and waits — returning the same `ISubmittedTransaction`:
 
 ```typescript
-import { writeContract, ToScVal, networks } from "@bluxcc/core";
+import { writeContract, networks } from "@bluxcc/core";
 
 const result = await writeContract(
   {
     address: "CCONTRACT...ADDRESS",
     fn: "increment",
-    args: [ToScVal.u32(5)],
+    args: [5],
   },
   { network: networks.testnet },
 );

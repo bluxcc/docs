@@ -6,7 +6,10 @@ description: Fetch a paginated list of claimable balances in your React app usin
 import { Tab, Tabs } from 'fumadocs-ui/components/tabs';
 import { Callout } from 'fumadocs-ui/components/callout';
 
-The `useClaimableBalances` hook returns a paginated list of claimable balances. All parameters are optional — called with no arguments it returns the latest claimable balances from the network.
+The `useClaimableBalances` hook returns a paginated list of claimable balances. Pass an `asset`; `claimant` defaults to the connected account, and `sponsor` is optional.
+
+`claimant` and `sponsor` accept `G…`, `M…`, SEP-2 federation, or `.xlm`
+names. See [address resolution](/javascript/core/address-resolution).
 
 ## Import
 ```tsx
@@ -15,7 +18,7 @@ import { useClaimableBalances } from "@bluxcc/react";
 
 ## Usage
 
-Called with no arguments:
+Read the connected account's claimable XLM balances:
 
 <Tabs items={['index.tsx', 'config.ts']} defaultIndex={0}>
 <Tab value="index.tsx">
@@ -23,7 +26,7 @@ Called with no arguments:
 import { useClaimableBalances } from "@bluxcc/react";
 
 function App() {
-  const { data } = useClaimableBalances({});
+  const { data } = useClaimableBalances({ asset: "xlm" });
 }
 ```
 </Tab>

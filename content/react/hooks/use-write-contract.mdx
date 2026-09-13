@@ -13,9 +13,19 @@ import { Callout } from 'fumadocs-ui/components/callout';
 import { useWriteContract } from "@bluxcc/react";
 ```
 
-## Encoding arguments with `ToScVal`
+## Native contract arguments
 
-Each argument **must** be encoded with the `ToScVal` class so it matches the Soroban type the contract expects. See the [`ToScVal` reference](/javascript/core/readContracts#encoding-arguments-with-toscval) for the full list of methods.
+Pass ordinary JavaScript values in the same order as the contract function's parameters. Blux reads the deployed contract spec and encodes each value as the expected Soroban type, so `args` does not require `ToScVal`.
+
+Use strings for addresses, strings, and symbols; booleans for `bool`; `Uint8Array` for bytes; and arrays for vectors or tuples. Integers accept safe numbers, `bigint` values, or decimal strings. Prefer `bigint` or a decimal string for wide integers such as `i128`.
+
+The contract `address` and every ABI-declared `Address` argument accept `.xlm`
+names and SEP-2 federation addresses, including address values nested in
+contract-defined structures. See [address resolution](/javascript/core/address-resolution).
+
+<Callout type="info">
+  Pre-encoded `xdr.ScVal` arguments remain supported for existing integrations, but manual encoding is optional.
+</Callout>
 
 ## Usage
 
@@ -24,26 +34,29 @@ Call a token's `transfer` method when the user clicks a button:
 <Tabs items={['index.tsx', 'config.ts']} defaultIndex={0}>
 <Tab value="index.tsx">
 ```tsx
-import { useWriteContract, useBlux, ToScVal } from "@bluxcc/react";
+import { useWriteContract, useBlux } from "@bluxcc/react";
 
 const TOKEN = "CB64D3G7SM2RTH6JSGG34DDTFTQ5CFDKVDZJZSODMCX4NJ2HV2KN7OG";
 
 function TransferButton() {
   const { user } = useBlux();
-  const { mutate, isPending } = useWriteContract();
+  const { mutate, isPending } = useWriteContract<null>();
 
-  const transfer = () =>
+  const transfer = () => {
+    if (!user) return;
+
     mutate({
       call: {
         address: TOKEN,
         fn: "transfer",
         args: [
-          ToScVal.address(user?.address ?? ""), // from
-          ToScVal.address("GB...TO"),           // to
-          ToScVal.i128("1000000000"),           // amount
+          user.address,      // from: Address
+          "bob.xlm",        // to: Address
+          "1000000000",     // amount: i128
         ],
       },
     });
+  };
 
   return (
     <button onClick={transfer} disabled={isPending}>
@@ -58,6 +71,7 @@ function TransferButton() {
 root.render(
   <BluxProvider
     config={{
+      appId: "your-app-id",
       appName: "MyApp",
       networks: [networks.testnet, networks.mainnet],
     }}
@@ -69,16 +83,26 @@ root.render(
 </Tab>
 </Tabs>
 
-The mutation variables are `{ call, options }`, where `call` is the contract call and `options` can carry a `network`. Use `mutateAsync` if you prefer to `await` the result:
+The mutation variables are `{ call, options }`, where `call` is the contract call and `options` can carry a `network`. Use `mutateAsync` if you prefer to `await` the result. Pass the decoded contract return type as the hook generic:
 
 ```tsx
-const { mutateAsync } = useWriteContract();
+const { mutateAsync } = useWriteContract<bigint>();
 
 const result = await mutateAsync({
-  call: { address: TOKEN, fn: "transfer", args: [/* … */] },
+  call: {
+    address: TOKEN,
+    fn: "mint",
+    args: ["alice.xlm", "1000000000"],
+  },
   options: { network: networks.mainnet },
 });
+
+const minted = await result.returnValue(); // bigint | null
 ```
+
+Because the ABI is discovered at runtime, TypeScript cannot infer this value
+from `address`, `fn`, and `network` strings. Without a generic,
+`returnValue()` is `unknown | null`; it is `null` for a void function.
 
 <Callout type="info">
   A user must be connected before calling the mutation — the connected account is the transaction source. Handle rejection and simulation failures via the mutation's `onError` callback or a `try/catch` around `mutateAsync`.

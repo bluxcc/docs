@@ -8,6 +8,9 @@ import { Callout } from 'fumadocs-ui/components/callout';
 
 The `usePayments` hook returns a paginated list of Stellar payments. All parameters are optional — called with no arguments it returns the latest payments from the network.
 
+`forAccount` accepts `G…`, `M…`, SEP-2 federation, or `.xlm`. See
+[address resolution](/javascript/core/address-resolution).
+
 ## Import
 ```tsx
 import { usePayments } from "@bluxcc/react";

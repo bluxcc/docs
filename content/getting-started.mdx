@@ -105,7 +105,7 @@ createConfig({
 | **Email** | Add `"email"` — users get a one-time code by email. |
 | **SMS** | Add `"sms"` — users get a one-time code by phone. |
 | **Passkey** | Add `"passkey"` — passwordless sign-in via Face ID / Touch ID / security key. |
-| **Socials** | Add the provider key (`"google"`, `"meta"`, `"github"`, `"twitter"`, `"discord"`, `"apple"`) **and** enable that provider in the dashboard. |
+| **Socials** | Add a [supported provider key](/dashboard/socials) (for example, `"google"`, `"farcaster"`, or `"github"`) **and** enable that provider in the dashboard. |
 
 <Callout type="warn">
   Social providers must be turned on for your `appId` in the dashboard before they appear in the modal — adding them to `loginMethods` alone isn't enough. See [Socials](/dashboard/socials).
@@ -113,7 +113,7 @@ createConfig({
 
 ## 5. Use Blux
 
-Once initialized, you have two kinds of tools: **built-in modals** (full UI, no work on your side) and **data hooks/functions** (raw data for your own UI). In React everything is on the `useBlux` hook; in vanilla JS it's on the `blux` object.
+Once initialized, you can use **built-in modals**, build a **white-label login UI**, or call **data hooks/functions**. Hosted actions and session state are exposed by `useBlux` in React and the `blux` object in vanilla JavaScript.
 
 ### Built-in modals
 
@@ -143,6 +143,7 @@ blux.profile(); // open the account modal
 
 <Cards>
   <Card title="Login" href="/react/usage/login" description="Authenticate users with the built-in modal." />
+  <Card title="White-label Login" href="/react/usage/white-label-login" description="Build your own login UI with dedicated React hooks." />
   <Card title="Fund Me" href="/react/usage/fund-me" description="Let users on-ramp fiat into their wallet." />
   <Card title="Profile" href="/react/usage/profile" description="Account management — receive, send, swap, activity." />
   <Card title="Send Transaction" href="/react/usage/send-transaction" description="Submit a signed transaction with a confirmation modal." />

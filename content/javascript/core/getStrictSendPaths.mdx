@@ -3,7 +3,7 @@ title: Get Strict Send Paths
 description: Fetch strict send payment paths using the Blux core SDK.
 ---
 
-The `getStrictSendPaths` function returns available payment paths for a strict send operation.
+The `getStrictSendPaths` function returns available payment paths for a strict send operation. When `destination` is an account string, it accepts `G…`, `M…`, SEP-2 federation, or `.xlm`; see [address resolution](/javascript/core/address-resolution).
 
 The return value contains two properties:
 - `response` — the records you can use directly
@@ -29,12 +29,12 @@ type GetPaymentPathResult = {
 import { core } from "@bluxcc/core";
 
 // args: [
-//   sourceAsset: Asset,
+//   sourceAsset: AssetArg,
 //   sourceAmount: string,
-//   destination: string | Asset[],
+//   destination: string | AssetArg[], // account address/name, or destination assets
 // ]
 const result = await core.getStrictSendPaths(
-  [sourceAsset, sourceAmount, destination],
+  [sourceAsset, sourceAmount, "alice.xlm"],
   options,
 );
 ```

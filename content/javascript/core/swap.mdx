@@ -45,8 +45,8 @@ type SwapOptions = {
   // Which side is fixed. Defaults to 'exactIn'.
   type?: SwapType;
 
-  // Where the bought asset is delivered: a Stellar address (G.../M...) or a
-  // SEP-2 federated address. Defaults to the connected account (a self-swap).
+  // Where the bought asset is delivered: G.../M..., a SEP-2 address, or .xlm
+  // name. Defaults to the connected account (a self-swap).
   to?: string;
 
   // Maximum acceptable slippage as a fraction, where 0.005 = 0.5%. Defaults
@@ -69,7 +69,7 @@ const swap: (options: SwapOptions) => Promise<ISubmittedTransaction>;
 | `toAsset` | `string \| Asset` | — | **Required.** Asset being bought. Same accepted forms as `fromAsset`; must differ from it. |
 | `amount` | `string \| number \| bigint` | — | **Required.** The fixed amount in decimal units (`"100"`, not base units). Meaning depends on `type` — see below. Must be greater than zero. |
 | `type` | `"exactIn" \| "exactOut"` | `"exactIn"` | Which side of the trade is fixed. |
-| `to` | `string` | connected account | Recipient of the bought asset: `G…`/`M…` or a SEP-2 federated address. Omit for a self-swap. |
+| `to` | `string` | connected account | Recipient of the bought asset: `G…`/`M…`, a SEP-2 address, or `.xlm` name. Omit for a self-swap. |
 | `slippage` | `number` | `0.005` | Maximum slippage as a fraction (`0.005` = 0.5%). Must be `>= 0` and `< 1`. |
 | `memo` | `string` | — | Optional text memo. |
 | `network` | `string` | active network | Network passphrase to swap on — use the `networks` map (e.g. `networks.testnet`). |
@@ -157,7 +157,10 @@ await core.swap({
 });
 ```
 
-`to` also accepts a SEP-2 federated address (`alice*example.com`), which Blux resolves before building the swap.
+`to` also accepts a SEP-2 federated address (`alice*example.com`) or `.xlm`
+name (`alice.xlm`), which Blux resolves before building the swap. A memo from
+the name record is attached unless you pass `memo` yourself. See
+[address resolution](/javascript/core/address-resolution).
 
 ### Pass an `Asset` instance
 
@@ -196,7 +199,7 @@ await core.swap({
 ```ts
 interface ISubmittedTransaction {
   hash: string;                          // the transaction hash
-  returnValue: () => Promise<unknown>;   // null — a path payment returns no value
+  returnValue: () => Promise<unknown | null>; // null — a path payment returns no value
   raw: SubmitTransactionResponse | GetSuccessfulTransactionResponse;
 }
 ```

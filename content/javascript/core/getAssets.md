@@ -3,7 +3,9 @@ title: Get Assets
 description: Fetch a paginated list of Stellar assets using the Blux core SDK.
 ---
 
-The `getAssets` function returns a paginated list of Stellar assets.
+The `getAssets` function returns a paginated list of Stellar assets. `forIssuer`
+accepts a `G…`/`M…` account, SEP-2 federation address, or `.xlm` name; see
+[address resolution](/javascript/core/address-resolution).
 
 The return value contains two properties:
 - `response` — the asset records you can use directly
@@ -20,7 +22,7 @@ export type CallBuilderOptions = {
 
 type GetAssetsOptions = CallBuilderOptions & {
   forCode?: string;
-  forIssuer?: string;
+  forIssuer?: string; // G…/M…, SEP-2 address, or .xlm name
 };
 
 type GetAssetsResult = {
@@ -33,5 +35,8 @@ type GetAssetsResult = {
 ```typescript
 import { core } from "@bluxcc/core";
 
-const result = await core.getAssets({});
+const result = await core.getAssets({
+  forCode: "USDC",
+  forIssuer: "issuer.xlm",
+});
 ```
