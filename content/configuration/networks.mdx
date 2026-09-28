@@ -8,6 +8,43 @@ import { Callout } from 'fumadocs-ui/components/callout';
 
 The `networks` option defines which Stellar networks your app supports. If a connected wallet is on a network not in this list, Blux will prompt the user to switch.
 
+`networks`, `defaultNetwork`, and `appName` are optional. The only required config field is `appId`, from [dashboard.blux.cc](https://dashboard.blux.cc).
+
+## Defaults
+
+| What you pass | What Blux uses |
+|---|---|
+| Neither `networks` nor `defaultNetwork` | **Mainnet** only (`networks.mainnet`) |
+| `defaultNetwork` only | That network, as the only supported network |
+| `networks` only | The list you passed, starting on the first item |
+| Both | The list you passed, starting on `defaultNetwork` |
+| No `appName`, or a blank one | `"App"` |
+
+A config with only an App ID runs on Mainnet and shows up as `"App"` in wallet prompts:
+
+<Tabs items={['React', 'Vanilla JS']} defaultIndex={0}>
+<Tab value="React">
+```tsx
+<BluxProvider
+  config={{
+    appId: "your-app-id",
+  }}
+>
+  {children}
+</BluxProvider>
+```
+</Tab>
+<Tab value="Vanilla JS">
+```ts
+import { createConfig } from "@bluxcc/core";
+
+createConfig({
+  appId: "your-app-id",
+});
+```
+</Tab>
+</Tabs>
+
 ## Available Networks
 ```ts
 import { core } from "@bluxcc/core";
@@ -51,7 +88,7 @@ createConfig({
 </Tab>
 </Tabs>
 
-If you only pass one network, `defaultNetwork` is optional — Blux will use the first item in the array automatically. You can change the active network later using `switchNetwork()`.
+Pass `networks` when the app should support more than the default Mainnet. If that array is the only network option you set, Blux starts on the first item. You can change the active network later using `switchNetwork()`. The target has to be one of the networks in your config — when you omitted `networks`, that list is Mainnet only.
 
 <Callout type="info">
   Network switching prompts only appear for wallets that support `getNetwork()`, such as Rabet and Freighter. You can disable this behavior entirely by setting `promptOnWrongNetwork: false` in your config.

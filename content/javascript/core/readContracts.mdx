@@ -7,7 +7,7 @@ import { Callout } from 'fumadocs-ui/components/callout';
 
 `readContracts` is a **Soroban** helper that reads data from one or more smart contracts. It builds each call, simulates it against the network (no signature, no fee, no on-chain state change), and returns the decoded results. Use it for any read-only contract method — token balances, metadata, pool reserves, configuration, and so on.
 
-It accepts an **array of calls** and runs them in parallel, so you can batch several reads in a single request.
+It accepts an **array of calls** and runs them in parallel, so you can batch several reads in a single request. For one call, use [`readContract`](/javascript/core/readContract) — it takes a single call and returns `{ raw, value }` instead of arrays.
 
 <Callout type="info">
   `readContracts` simulates against a null source account, so it never spends fees or requires the user to be connected. For methods that mutate state, use [`writeContract`](/javascript/core/writeContract).

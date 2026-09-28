@@ -2,6 +2,7 @@
   "pages": [
     "index",
     "getting-started",
+    "agent-skills",
     "configuration",
     "dashboard",
     "api",

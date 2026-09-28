@@ -9,11 +9,13 @@ import { Card, Cards } from 'fumadocs-ui/components/card';
 
 This page walks you through the full path to a working integration, from creating your app to letting users log in. Each step links to a deeper page if you want more detail.
 
+A coding agent can follow the same path from [Agent skills](/agent-skills): [https://docs.blux.cc/SKILLS.md](https://docs.blux.cc/SKILLS.md).
+
 The flow looks like this:
 
 1. **Create an app in the Dashboard** and grab your App ID.
 2. **Pick a package** — React or core (vanilla JS) — and install it.
-3. **Initialize Blux** with `createConfig` / `BluxProvider`, passing your App ID and a network.
+3. **Initialize Blux** with `createConfig` / `BluxProvider`, passing your App ID.
 4. **Customize** appearance, login methods, language, and wallets in the config.
 5. **Use it** — open the built-in modals (`login`, `fundMe`, `profile`) or call the data hooks/functions.
 
@@ -49,17 +51,16 @@ npm install @bluxcc/core
 
 ## 3. Initialize Blux
 
-Wrap your app with `BluxProvider` (React) or call `createConfig` once at startup (vanilla JS). The only required options are `appId` and `networks`.
+Wrap your app with `BluxProvider` (React) or call `createConfig` once at startup (vanilla JS). The only required option is `appId`. Leave out `networks` and the app uses Mainnet. Leave out `appName` and Blux uses `"App"`. See [Networks](/configuration/networks).
 
 <Tabs items={['React', 'Vanilla JS']} defaultIndex={0}>
 <Tab value="React">
 ```tsx
-import { networks, BluxProvider } from "@bluxcc/react";
+import { BluxProvider } from "@bluxcc/react";
 
 <BluxProvider
   config={{
     appId: "your-app-id",
-    networks: [networks.mainnet],
   }}
 >
   {children}
@@ -68,11 +69,10 @@ import { networks, BluxProvider } from "@bluxcc/react";
 </Tab>
 <Tab value="Vanilla JS">
 ```ts
-import { createConfig, core } from "@bluxcc/core";
+import { createConfig } from "@bluxcc/core";
 
 createConfig({
   appId: "your-app-id",
-  networks: [core.networks.mainnet],
 });
 ```
 </Tab>
@@ -154,7 +154,7 @@ blux.profile(); // open the account modal
 When you want to build your own UI, read chain data and call contracts directly:
 
 - **Account data** — balances, transactions, payments, offers, and more. → [React hooks](/react/hooks) · [Core functions](/javascript/core)
-- **Soroban contracts** — read and write smart contracts. → [`useReadContracts`](/react/hooks/use-read-contracts) / [`useWriteContract`](/react/hooks/use-write-contract) (React) · [`readContracts`](/javascript/core/readContracts) / [`writeContract`](/javascript/core/writeContract) (core)
+- **Soroban contracts** — read and write smart contracts. One read: [`useReadContract`](/react/hooks/use-read-contract) / [`readContract`](/javascript/core/readContract). Several reads at once: [`useReadContracts`](/react/hooks/use-read-contracts) / [`readContracts`](/javascript/core/readContracts). Writes: [`useWriteContract`](/react/hooks/use-write-contract) / [`writeContract`](/javascript/core/writeContract).
 
 <Callout type="info">
   That's the whole loop: configure once, then mix built-in modals with hooks/functions however your app needs. Try it all in the [live demo →](https://demo.blux.cc)

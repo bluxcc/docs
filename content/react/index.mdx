@@ -36,21 +36,20 @@ Install the Blux React SDK using your package manager of choice:
 
 ## Setup
 
-Wrap your app with `BluxProvider` to give any component access to the Blux SDK. Place it as close to the root of your application as possible. The only required options are `appId` and `networks`.
+Wrap your app with `BluxProvider` to give any component access to the Blux SDK. Place it as close to the root of your application as possible. The only required option is `appId`. Leave out `networks` and the app uses Mainnet. Leave out `appName` and Blux uses `"App"`.
 
 <Tabs items={['Next.js', 'Vite / CRA']} defaultIndex={0}>
   <Tab value="Next.js">
 ```tsx
     "use client";
 
-    import { networks, BluxProvider } from "@bluxcc/react";
+    import { BluxProvider } from "@bluxcc/react";
 
     export default function Providers({ children }: { children: React.ReactNode }) {
       return (
         <BluxProvider
           config={{
             appId: "your-app-id",
-            networks: [networks.mainnet],
           }}
         >
           {children}
@@ -63,7 +62,7 @@ Wrap your app with `BluxProvider` to give any component access to the Blux SDK. 
 ```tsx
     import React from "react";
     import ReactDOM from "react-dom/client";
-    import { networks, BluxProvider } from "@bluxcc/react";
+    import { BluxProvider } from "@bluxcc/react";
     import App from "./App";
 
     const root = ReactDOM.createRoot(document.getElementById("root")!);
@@ -73,7 +72,6 @@ Wrap your app with `BluxProvider` to give any component access to the Blux SDK. 
         <BluxProvider
           config={{
             appId: "your-app-id",
-            networks: [networks.mainnet],
           }}
         >
           <App />

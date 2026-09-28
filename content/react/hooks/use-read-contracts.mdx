@@ -8,6 +8,8 @@ import { Callout } from 'fumadocs-ui/components/callout';
 
 `useReadContracts` is the React wrapper around [`readContracts`](/javascript/core/readContracts). It reads data from one or more **Soroban** smart contracts by simulating the calls (no signature, no fee) and exposes the result as a TanStack Query, so you get caching, refetching, and loading states for free.
 
+Use [`useReadContract`](/react/hooks/use-read-contract) when you only need one call. Use `useReadContracts` when you want several reads at the same time — the results come back index-aligned with the calls you passed in.
+
 ## Import
 ```tsx
 import { useReadContracts } from "@bluxcc/react";

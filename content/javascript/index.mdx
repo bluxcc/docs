@@ -34,26 +34,24 @@ Install the Blux core SDK using your package manager of choice:
 
 ## Setup
 
-Call `createConfig` once at the entry point of your application to initialize Blux. Do not call it more than once. The only required options are `appId` and `networks`.
+Call `createConfig` once at the entry point of your application to initialize Blux. Do not call it more than once. The only required option is `appId`. Leave out `networks` and the app uses Mainnet. Leave out `appName` and Blux uses `"App"`.
 
 <Tabs items={['ESM', 'CJS', 'HTML (CDN)']} defaultIndex={0}>
   <Tab value="ESM">
 ```ts
-    import { createConfig, core } from "@bluxcc/core";
+    import { createConfig } from "@bluxcc/core";
 
     createConfig({
       appId: "your-app-id",
-      networks: [core.networks.mainnet],
     });
 ```
   </Tab>
   <Tab value="CJS">
 ```ts
-    const { createConfig, core } = require("@bluxcc/core");
+    const { createConfig } = require("@bluxcc/core");
 
     createConfig({
       appId: "your-app-id",
-      networks: [core.networks.mainnet],
     });
 ```
   </Tab>
@@ -64,7 +62,6 @@ Call `createConfig` once at the entry point of your application to initialize Bl
     <script>
       Blux.createConfig({
         appId: "your-app-id",
-        networks: [Blux.core.networks.mainnet],
       });
     </script>
 ```

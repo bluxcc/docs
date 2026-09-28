@@ -1,0 +1,98 @@
+---
+title: useReadContract
+description: Read one value from a Soroban smart contract in React, powered by TanStack Query.
+---
+
+import { Tab, Tabs } from 'fumadocs-ui/components/tabs';
+import { Callout } from 'fumadocs-ui/components/callout';
+
+`useReadContract` is the React wrapper around [`readContract`](/javascript/core/readContract). It simulates one **Soroban** contract function (no signature, no fee) and exposes the result as a TanStack Query, so you get caching, refetching, and loading states for free.
+
+Use `useReadContract` when you want to call something once. Use [`useReadContracts`](/react/hooks/use-read-contracts) when you want to call multiple things at the same time.
+
+## Import
+```tsx
+import { useReadContract } from "@bluxcc/react";
+```
+
+## Native contract arguments
+
+Pass native JavaScript values in the contract function's positional order. The hook uses the deployed contract spec to encode each value as the declared Soroban type, so `args` does not require `ToScVal`.
+
+The contract `address` and every value whose ABI type is `Address` also accept `.xlm` names and SEP-2 federation addresses. See [address resolution](/javascript/core/address-resolution) and [Read Contracts](/javascript/core/readContracts) for the argument shapes.
+
+<Callout type="info">
+  Pre-encoded `xdr.ScVal` arguments remain supported, but manual encoding is optional.
+</Callout>
+
+## Usage
+
+Read a token's `balance`:
+
+<Tabs items={['index.tsx', 'config.ts']} defaultIndex={0}>
+<Tab value="index.tsx">
+```tsx
+import { useReadContract } from "@bluxcc/react";
+
+const TOKEN = "CB64D3G7SM2RTH6JSGG34DDTFTQ5CFDKVDZJZSODMCX4NJ2HV2KN7OG";
+
+function Balance({ account }: { account: string }) {
+  const { data, isLoading } = useReadContract<string>({
+    address: TOKEN,
+    fn: "balance",
+    args: [account],
+  });
+
+  if (isLoading) return <p>Loading…</p>;
+
+  return <p>{data?.value}</p>;
+}
+```
+</Tab>
+<Tab value="config.ts">
+```tsx
+root.render(
+  <BluxProvider
+    config={{
+      appId: "your-app-id",
+    }}
+  >
+    <App />
+  </BluxProvider>
+);
+```
+</Tab>
+</Tabs>
+
+## Return type
+
+Runtime contract addresses and function names do not give TypeScript a compile-time ABI. Pass the decoded return type as the generic:
+
+```tsx
+const query = useReadContract<string>({
+  address: TOKEN,
+  fn: "balance",
+  args: ["alice.xlm"],
+});
+
+query.data?.value; // string
+query.data?.raw;   // the simulation response
+```
+
+Omit the generic and `value` is `unknown`. Include `null` in the generic when the function can return no value.
+
+You can pass network options and TanStack Query options (such as `enabled`) as the second and third arguments:
+
+```tsx
+import { networks, useReadContract } from "@bluxcc/react";
+
+const { data } = useReadContract<string>(
+  { address: TOKEN, fn: "name", args: [] },
+  { network: networks.mainnet },
+  { enabled: Boolean(account), staleTime: 60000 },
+);
+```
+
+<Callout type="info">
+  The hook returns the standard TanStack Query result. The contract data lives on `data` as `{ raw, value }`.
+</Callout>

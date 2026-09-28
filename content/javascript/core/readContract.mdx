@@ -1,0 +1,103 @@
+---
+title: Read Contract
+description: Read one value from a Soroban smart contract by simulating a single call.
+---
+
+import { Callout } from 'fumadocs-ui/components/callout';
+
+`readContract` is the single-call version of [`readContracts`](/javascript/core/readContracts). It simulates one **Soroban** contract function — no signature, no fee, no on-chain state change — and returns one decoded value.
+
+Use it when you only need one read, such as a token balance or a config getter. When you need several reads at the same time, use [`readContracts`](/javascript/core/readContracts) instead. It takes an array and returns index-aligned results.
+
+<Callout type="info">
+  `readContract` simulates against a null source account, so it never spends fees or requires the user to be connected. For methods that mutate state, use [`writeContract`](/javascript/core/writeContract).
+</Callout>
+
+## Type
+```ts
+type IContractCall = {
+  address: string;   // C… contract ID, SEP-2 address, or .xlm name
+  fn: string;        // function name to invoke
+  args: unknown[];   // native values in the function's positional order
+};
+
+type ReadContractsOptions = {
+  network?: string;    // Omit to use the active network
+};
+
+type ReadContractResult<TReturnValue = unknown> = {
+  raw: SimulateTransactionResponse | undefined;
+  value: TReturnValue;
+};
+
+const readContract: <TReturnValue = unknown>(
+  call: IContractCall,
+  options?: ReadContractsOptions,
+) => Promise<ReadContractResult<TReturnValue>>;
+```
+
+## Native contract arguments
+
+Pass ordinary JavaScript values in the same order as the contract function's parameters. Blux loads the deployed contract spec and encodes every value as the declared Soroban type, so `args` does not require the `ToScVal` class.
+
+```ts
+args: [
+  "alice.xlm",      // resolved and encoded when the spec declares Address
+  "1000000000",     // encoded as i128 when the spec declares i128
+  true,             // encoded as bool when the spec declares bool
+]
+```
+
+Address-typed values accept `G…`, `C…`, SEP-2 federation addresses, and `.xlm` names, including addresses nested in an option, vector, tuple, map, struct, or union. See [address resolution](/javascript/core/address-resolution). The full argument table is on [Read Contracts](/javascript/core/readContracts).
+
+<Callout type="info">
+  Existing code may continue passing pre-encoded `xdr.ScVal` arguments. Native values and pre-encoded values can also be mixed, but manual encoding is no longer required.
+</Callout>
+
+## Usage
+
+Read a token's `balance`:
+
+```ts
+import { core } from "@bluxcc/core";
+
+const { value } = await core.readContract<string>({
+  address: "CB64D3G7SM2RTH6JSGG34DDTFTQ5CFDKVDZJZSODMCX4NJ2HV2KN7OG",
+  fn: "balance",
+  args: ["alice.xlm"],
+});
+
+console.log(value); // decoded balance, e.g. "1000000000"
+```
+
+Omit `network` to use the active network. Pass one when the read should hit a specific network:
+
+```ts
+import { core } from "@bluxcc/core";
+
+const { value } = await core.readContract<string>(
+  {
+    address: "token.xlm",
+    fn: "name",
+    args: [],
+  },
+  { network: core.networks.mainnet },
+);
+```
+
+## Return type
+
+The deployed ABI is loaded at runtime, so TypeScript cannot infer a return type from runtime `address`, `fn`, and `network` strings. Pass the decoded type as the generic:
+
+```ts
+const result = await core.readContract<string>(call);
+
+result.value; // string
+result.raw;   // the simulation response
+```
+
+Omit the generic and `value` is `unknown`. Include `null` in the generic when the function can return no value.
+
+<Callout type="info">
+  `bigint` results are returned as strings so they're safe to serialize. The raw simulation is on `raw` if you need footprint or resource details.
+</Callout>
