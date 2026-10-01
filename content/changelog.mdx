@@ -1,7 +1,7 @@
 ---
 title: Changelog
 description: Release notes for @bluxcc/core and @bluxcc/react. Both packages ship at the same version.
-version: v0.3.7
+version: v0.3.8
 ---
 
 import { Tab, Tabs } from 'fumadocs-ui/components/tabs';
@@ -9,6 +9,34 @@ import { Tab, Tabs } from 'fumadocs-ui/components/tabs';
 `@bluxcc/core` and `@bluxcc/react` are released together. Every version below applies to both packages — pick the one that matches your stack.
 
 Newest releases are at the top.
+
+---
+
+## v0.3.8
+
+October 1, 2026 · [GitHub (core)](https://github.com/bluxcc/core/releases/tag/v0.3.8) · [GitHub (react)](https://github.com/bluxcc/react/releases/tag/v0.3.8)
+
+<Tabs items={['React', 'JavaScript']} defaultIndex={0}>
+<Tab value="React">
+```bash
+npm i @bluxcc/react@^0.3.8
+```
+</Tab>
+<Tab value="JavaScript">
+```bash
+npm i @bluxcc/core@^0.3.8
+```
+</Tab>
+</Tabs>
+
+### Updates
+
+- `createConfig` now requires only `appId`; `appName` and `networks` have defaults.
+- Improved JWT token storage security.
+- Updated signing modals to show the correct message for message, auth entry, and transaction signing.
+- Added `useReadContract`.
+- Fixed TypeScript types for `createConfig` options.
+- Fixed theme inheritance.
 
 ---
 
