@@ -192,7 +192,7 @@ Pass native JavaScript values in the function's argument order. Blux reads the d
 ```tsx
 import { useReadContract } from "@bluxcc/react";
 
-const TOKEN = "CB64D3G7SM2RTH6JSGG34DDTFTQ5CFDKVDZJZSODMCX4NJ2HV2KN7OG";
+const TOKEN = "CAS3J7GYLGXMF6TDJBBYYSE3HQ6BBSMLNUQ34T6TZMYMW2EVH34XOWMA";
 
 function Balance({ account }: { account: string }) {
   const { data, isLoading } = useReadContract<string>({
@@ -253,7 +253,7 @@ Writes need a connected user. Blux builds the transaction, simulates it, and ask
 ```tsx
 import { useBlux, useWriteContract } from "@bluxcc/react";
 
-const TOKEN = "CB64D3G7SM2RTH6JSGG34DDTFTQ5CFDKVDZJZSODMCX4NJ2HV2KN7OG";
+const TOKEN = "CAS3J7GYLGXMF6TDJBBYYSE3HQ6BBSMLNUQ34T6TZMYMW2EVH34XOWMA";
 
 function TransferButton() {
   const { user } = useBlux();
